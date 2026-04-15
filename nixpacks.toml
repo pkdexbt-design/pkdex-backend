@@ -1,0 +1,14 @@
+# Railway Nixpacks build configuration
+# Required for native Node.js addons: ssh2-sftp-client, discord.js-selfbot-v13
+
+[phases.setup]
+aptPkgs = ["python3", "build-essential", "libssl-dev"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "node dist/server.js"

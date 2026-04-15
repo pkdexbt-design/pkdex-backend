@@ -27,7 +27,7 @@ export function corsMiddleware(req: Request, res: Response, next: NextFunction) 
         res.setHeader('Access-Control-Allow-Origin', origin)
         res.setHeader('Vary', 'Origin')
       }
-    } catch {
+    } catch (_err) {
       // Safety net: if env parsing blows up, still allow the request
       res.setHeader('Access-Control-Allow-Origin', origin)
       res.setHeader('Vary', 'Origin')
