@@ -135,8 +135,8 @@ import './queue/OrderWorker'
 
 // Iniciar Discord Bridge (Cuenta Humana Infiltrada)
 import { discordBridge } from './sysbot/DiscordBridge'
-const discordToken = process.env.DISCORD_TOKEN
-const discordChannelId = process.env.DISCORD_CHANNEL_ID
+const discordToken = process.env.DISCORD_TOKEN?.trim()
+const discordChannelId = process.env.DISCORD_CHANNEL_ID?.replace(/[^0-9]/g, '')
 if (discordToken && discordChannelId) {
   discordBridge.connect(discordToken, discordChannelId)
 } else {
