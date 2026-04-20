@@ -25,6 +25,14 @@ export const orderWorker = new Worker(
     try {
       console.log(`[OrderWorker] Sending order ${orderId} directly to Discord`)
 
+      // Determine target channel based on gameVersion (PSAS-14)
+      let targetChannelId: string | undefined;
+      if (gameVersion === 'scarlet' || gameVersion === 'violet') {
+        targetChannelId = process.env.DISCORD_CHANNEL_ID_SV?.replace(/[^0-9]/g, '');
+      } else if (gameVersion === 'legends-za') {
+        targetChannelId = process.env.DISCORD_CHANNEL_ID_ZA?.replace(/[^0-9]/g, '');
+      }
+
       // 3. Generate and upload .pk9 files for the entire team
       const team = payload as PokemonBuildPayload[]
       const uploadedFiles: string[] = []
@@ -39,8 +47,8 @@ export const orderWorker = new Worker(
           console.log(showdownText)
           console.log(`[OrderWorker] ================================================================`)
 
-          // Send to Discord via the selfbot bridge, passing the trade code
-          const success = await discordBridge.sendTradeCommand(showdownText, botTradeCode)
+          // Send to Discord via the selfbot bridge, passing the trade code and target channel
+          const success = await discordBridge.sendTradeCommand(showdownText, botTradeCode, targetChannelId)
           
           if (!success) {
             throw new Error(`DiscordBridge failed to send command for ${pokemon.species}. Please ensure the bridge is connected and the channel ID is valid.`)

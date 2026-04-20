@@ -83,10 +83,10 @@ class DiscordBridgeService {
   }
 
   /**
-   * Sends the trade command, with an optional wait for connection to be ready.
-   * Will wait up to 20 seconds if Discord is still connecting.
+   * Sends the trade command to a specific channel.
+   * If overrideChannelId is provided, it uses that instead of targetChannelId.
    */
-  public async sendTradeCommand(showdownText: string, tradeCode: string): Promise<boolean> {
+  public async sendTradeCommand(showdownText: string, tradeCode: string, overrideChannelId?: string): Promise<boolean> {
     // Wait up to 20 seconds for the connection to be ready
     if (!this.isConnected) {
       console.warn('[DiscordBridge] Not connected yet, waiting up to 20s...');
@@ -97,22 +97,24 @@ class DiscordBridgeService {
       }
     }
 
-    if (!this.targetChannelId) {
+    const activeChannelId = overrideChannelId || this.targetChannelId;
+
+    if (!activeChannelId) {
       console.error('[DiscordBridge] No target channel specified.');
       return false;
     }
 
     try {
-      const channel = await this.client.channels.fetch(this.targetChannelId);
+      const channel = await this.client.channels.fetch(activeChannelId);
       if (channel && channel.isText()) {
         const formattedCode = tradeCode.replace(/\s/g, ''); // Remove spaces: "1234 5678" -> "12345678"
         const commandText = `!trade ${formattedCode}\n${showdownText}`;
-        console.log(`[DiscordBridge] Sending to channel ${this.targetChannelId}:\n${commandText}`);
+        console.log(`[DiscordBridge] Sending to channel ${activeChannelId}:\n${commandText}`);
         await (channel as any).send(commandText);
         console.log('[DiscordBridge] ✅ Command sent!');
         return true;
       } else {
-        console.error(`[DiscordBridge] Channel ${this.targetChannelId} not found or is not a text channel.`);
+        console.error(`[DiscordBridge] Channel ${activeChannelId} not found or is not a text channel.`);
         return false;
       }
     } catch (error) {
