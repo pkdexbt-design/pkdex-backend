@@ -120,9 +120,14 @@ export function buildShowdownText(pokemon: PokemonBuildPayload, gameVersion?: st
   }
 
   // ── EVs ───────────────────────────────────────────────────────────────────
-  // Included for all games. For Legends ZA, ALM maps EVs to Effort Levels internally.
-  const evParts = buildStatLine(pokemon.evs)
-  if (evParts) lines.push(`EVs: ${evParts}`)
+  // For Legends ZA: SKIP EVs entirely. ZA uses Effort Levels (EL), not EVs.
+  // Sending standard EV lines (e.g. "252 Atk / 252 Spe") causes ALM to crash
+  // with "Index was outside the bounds of the array". ALM auto-assigns ELs.
+  // For Scarlet/Violet: include EVs normally.
+  if (!isLegendsZA) {
+    const evParts = buildStatLine(pokemon.evs)
+    if (evParts) lines.push(`EVs: ${evParts}`)
+  }
 
   // ── Nature ───────────────────────────────────────────────────────────
   if (pokemon.nature) {
