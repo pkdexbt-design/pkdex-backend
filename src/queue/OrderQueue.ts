@@ -20,12 +20,12 @@ export const orderQueue = new Queue(ORDER_QUEUE_NAME, {
 /**
  * Add a new Trade Order to the queue
  */
-export async function addOrderToQueue(orderId: string, gameVersion: string, payload: any, tradeCode: string) {
-  console.log(`[OrderQueue] Adding order ${orderId} to queue for game ${gameVersion}`)
+export async function addOrderToQueue(orderId: string, gameVersion: string, payload: any, tradeCode: string, userPlan: string = 'free') {
+  console.log(`[OrderQueue] Adding order ${orderId} to queue for game ${gameVersion} (plan: ${userPlan})`)
   
   await orderQueue.add(
     'process-order',
-    { orderId, gameVersion, payload, tradeCode },
+    { orderId, gameVersion, payload, tradeCode, userPlan },
     {
       jobId: orderId, // Prevent duplicate jobs for the same order
     }

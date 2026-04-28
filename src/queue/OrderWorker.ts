@@ -13,9 +13,9 @@ import { PokemonBuildPayload } from '../lib/order-types'
 export const orderWorker = new Worker(
   ORDER_QUEUE_NAME,
   async (job: Job) => {
-    const { orderId, gameVersion, payload, tradeCode } = job.data
+    const { orderId, gameVersion, payload, tradeCode, userPlan } = job.data
 
-    console.log(`[OrderWorker] Processing order ${orderId} for ${gameVersion}`)
+    console.log(`[OrderWorker] Processing order ${orderId} for ${gameVersion} (Plan: ${userPlan || 'free'})`)
 
     // We no longer require BotConnector TCP presence locally.
     // The backend just sends orders straight to Discord for SysBot to read.
@@ -25,12 +25,16 @@ export const orderWorker = new Worker(
     try {
       console.log(`[OrderWorker] Sending order ${orderId} directly to Discord`)
 
-      // Determine target channel based on gameVersion (PSAS-14)
+      // Determine target channel based on gameVersion and user plan (PSAS-14)
       let targetChannelId: string | undefined;
       if (gameVersion === 'scarlet' || gameVersion === 'violet') {
         targetChannelId = process.env.DISCORD_CHANNEL_ID_SV?.replace(/[^0-9]/g, '');
       } else if (gameVersion === 'legends-za') {
-        targetChannelId = process.env.DISCORD_CHANNEL_ID_ZA?.replace(/[^0-9]/g, '');
+        if (userPlan === 'free') {
+          targetChannelId = process.env.DISCORD_CHANNEL_ID_ZA_FREE?.replace(/[^0-9]/g, '');
+        } else {
+          targetChannelId = process.env.DISCORD_CHANNEL_ID_ZA_PREMIUM?.replace(/[^0-9]/g, '');
+        }
       }
 
       // 3. Generate and upload .pk9 files for the entire team
