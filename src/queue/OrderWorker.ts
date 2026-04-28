@@ -33,7 +33,7 @@ export const orderWorker = new Worker(
         if (userPlan === 'free') {
           targetChannelId = process.env.DISCORD_CHANNEL_ID_ZA_FREE?.replace(/[^0-9]/g, '');
         } else {
-          targetChannelId = process.env.DISCORD_CHANNEL_ID_ZA_PREMIUM?.replace(/[^0-9]/g, '');
+          targetChannelId = (process.env.DISCORD_CHANNEL_ID_ZA_PREMIUM || process.env.DISCORD_CHANNEL_ID_ZA)?.replace(/[^0-9]/g, '');
         }
       }
 
