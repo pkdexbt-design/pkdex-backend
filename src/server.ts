@@ -137,6 +137,10 @@ import './queue/OrderWorker'
 import { discordBridge } from './sysbot/DiscordBridge'
 const discordToken = process.env.DISCORD_TOKEN?.trim()
 const discordChannelId = process.env.DISCORD_CHANNEL_ID?.replace(/[^0-9]/g, '')
+
+console.log(`[DEBUG] DISCORD_TOKEN is present: ${!!discordToken} (length: ${discordToken?.length})`)
+console.log(`[DEBUG] DISCORD_CHANNEL_ID parsed: '${discordChannelId}' (original: '${process.env.DISCORD_CHANNEL_ID}')`)
+
 if (discordToken && discordChannelId) {
   discordBridge.connect(discordToken, discordChannelId)
 } else {
