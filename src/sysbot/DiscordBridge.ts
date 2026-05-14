@@ -87,16 +87,6 @@ class DiscordBridgeService {
    * If overrideChannelId is provided, it uses that instead of targetChannelId.
    */
   public async sendTradeCommand(showdownText: string, tradeCode: string, overrideChannelId?: string): Promise<boolean> {
-    // Wait up to 20 seconds for the connection to be ready
-    if (!this.isConnected) {
-      console.warn('[DiscordBridge] Not connected yet, waiting up to 20s...');
-      const waited = await this.waitForConnection(20_000);
-      if (!waited) {
-        console.error('[DiscordBridge] Cannot send command: failed to connect in time.');
-        return false;
-      }
-    }
-
     const activeChannelId = overrideChannelId || this.targetChannelId;
 
     if (!activeChannelId) {
@@ -104,21 +94,61 @@ class DiscordBridgeService {
       return false;
     }
 
+    const formattedCode = tradeCode.replace(/\s/g, ''); // Remove spaces: "1234 5678" -> "12345678"
+    const commandText = `!trade ${formattedCode}\n${showdownText}`;
+
+    // 1. PRIMARY METHOD: HTTP REST Request (Bypasses WebSocket blocking issues on Railway)
+    if (this.savedToken) {
+      try {
+        console.log(`[DiscordBridge] Sending HTTP request to channel ${activeChannelId}...`);
+        const response = await fetch(`https://discord.com/api/v9/channels/${activeChannelId}/messages`, {
+          method: 'POST',
+          headers: {
+            'Authorization': this.savedToken, // User tokens do not use "Bot " prefix
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            content: commandText
+          })
+        });
+
+        if (response.ok) {
+          console.log('[DiscordBridge] ✅ Command sent via HTTP REST!');
+          return true;
+        } else {
+          console.error(`[DiscordBridge] HTTP send failed with status: ${response.status} ${response.statusText}`);
+          const text = await response.text();
+          console.error(`[DiscordBridge] HTTP response body: ${text}`);
+        }
+      } catch (error) {
+        console.error('[DiscordBridge] HTTP send error:', error);
+      }
+    }
+
+    // 2. FALLBACK METHOD: WebSocket
+    // Wait up to 20 seconds for the connection to be ready
+    if (!this.isConnected) {
+      console.warn('[DiscordBridge] Not connected via WebSocket, waiting up to 20s...');
+      const waited = await this.waitForConnection(20_000);
+      if (!waited) {
+        console.error('[DiscordBridge] Cannot send command: failed to connect in time.');
+        return false;
+      }
+    }
+
     try {
       const channel = await this.client.channels.fetch(activeChannelId);
       if (channel && channel.isText()) {
-        const formattedCode = tradeCode.replace(/\s/g, ''); // Remove spaces: "1234 5678" -> "12345678"
-        const commandText = `!trade ${formattedCode}\n${showdownText}`;
-        console.log(`[DiscordBridge] Sending to channel ${activeChannelId}:\n${commandText}`);
+        console.log(`[DiscordBridge] Sending via WebSocket to channel ${activeChannelId}:\n${commandText}`);
         await (channel as any).send(commandText);
-        console.log('[DiscordBridge] ✅ Command sent!');
+        console.log('[DiscordBridge] ✅ Command sent via WebSocket!');
         return true;
       } else {
         console.error(`[DiscordBridge] Channel ${activeChannelId} not found or is not a text channel.`);
         return false;
       }
     } catch (error) {
-      console.error('[DiscordBridge] Error sending command:', error);
+      console.error('[DiscordBridge] Error sending command via WebSocket:', error);
       return false;
     }
   }
