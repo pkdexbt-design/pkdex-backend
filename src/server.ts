@@ -136,15 +136,12 @@ import './queue/OrderWorker'
 // Iniciar Discord Bridge (Cuenta Humana Infiltrada)
 import { discordBridge } from './sysbot/DiscordBridge'
 const discordToken = process.env.DISCORD_TOKEN?.trim()
-const discordChannelId = process.env.DISCORD_CHANNEL_ID?.replace(/[^0-9]/g, '')
+const fallbackChannelId = process.env.DISCORD_CHANNEL_ID?.replace(/[^0-9]/g, '') || process.env.DISCORD_CHANNEL_ID_SV?.replace(/[^0-9]/g, '') || ''
 
-console.log(`[DEBUG] DISCORD_TOKEN is present: ${!!discordToken} (length: ${discordToken?.length})`)
-console.log(`[DEBUG] DISCORD_CHANNEL_ID parsed: '${discordChannelId}' (original: '${process.env.DISCORD_CHANNEL_ID}')`)
-
-if (discordToken && discordChannelId) {
-  discordBridge.connect(discordToken, discordChannelId)
+if (discordToken) {
+  discordBridge.connect(discordToken, fallbackChannelId)
 } else {
-  console.warn('⚠️  Discord Bridge no se ha iniciado: faltan DISCORD_TOKEN o DISCORD_CHANNEL_ID en .env')
+  console.warn('⚠️  Discord Bridge no se ha iniciado: falta DISCORD_TOKEN en .env')
 }
 
 // Graceful shutdown during development (tsx watch / nodemon)
