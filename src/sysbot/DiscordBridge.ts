@@ -86,7 +86,7 @@ class DiscordBridgeService {
    * Sends the trade command to a specific channel.
    * If overrideChannelId is provided, it uses that instead of targetChannelId.
    */
-  public async sendTradeCommand(showdownText: string, tradeCode: string, overrideChannelId?: string): Promise<boolean> {
+  public async sendTradeCommand(showdownText: string, tradeCode: string, overrideChannelId?: string, prefix: string = '!'): Promise<boolean> {
     const activeChannelId = overrideChannelId || this.targetChannelId;
 
     if (!activeChannelId) {
@@ -95,7 +95,7 @@ class DiscordBridgeService {
     }
 
     const formattedCode = tradeCode.replace(/\s/g, ''); // Remove spaces: "1234 5678" -> "12345678"
-    const commandText = `!trade ${formattedCode}\n${showdownText}`;
+    const commandText = `${prefix}trade ${formattedCode}\n${showdownText}`;
 
     // 1. PRIMARY METHOD: HTTP REST Request (Bypasses WebSocket blocking issues on Railway)
     if (this.savedToken) {

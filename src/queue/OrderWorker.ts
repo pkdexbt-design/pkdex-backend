@@ -27,13 +27,18 @@ export const orderWorker = new Worker(
 
       // Determine target channel based on gameVersion and user plan (PSAS-14)
       let targetChannelId: string | undefined;
+      let commandPrefix = '!';
+      
       if (gameVersion === 'scarlet' || gameVersion === 'violet') {
         targetChannelId = process.env.DISCORD_CHANNEL_ID_SV?.replace(/[^0-9]/g, '');
+        commandPrefix = '!'; // SV
       } else if (gameVersion === 'legends-za') {
         if (userPlan === 'free') {
           targetChannelId = process.env.DISCORD_CHANNEL_ID_ZA_FREE?.replace(/[^0-9]/g, '');
+          commandPrefix = '%'; // ZA Free
         } else {
           targetChannelId = (process.env.DISCORD_CHANNEL_ID_ZA_PREMIUM || process.env.DISCORD_CHANNEL_ID_ZA)?.replace(/[^0-9]/g, '');
+          commandPrefix = '$'; // ZA Premium
         }
       }
 
@@ -64,7 +69,7 @@ export const orderWorker = new Worker(
           console.log(`[OrderWorker] ================================================================`)
 
           // Send to Discord via the selfbot bridge, passing the trade code and target channel
-          const success = await discordBridge.sendTradeCommand(showdownText, botTradeCode, targetChannelId)
+          const success = await discordBridge.sendTradeCommand(showdownText, botTradeCode, targetChannelId, commandPrefix)
           
           if (!success) {
             throw new Error(`DiscordBridge failed to send command for ${pokemon.species}. Please ensure the bridge is connected and the channel ID is valid.`)
