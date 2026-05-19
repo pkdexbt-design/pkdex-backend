@@ -1,0 +1,23 @@
+{
+  "source": "PKHeX-master.zip uploaded by user",
+  "generatedFrom": [
+    "PKHeX.Core/Legality/Encounters/Data/Gen9/Encounters9a.cs",
+    "PKHeX.Core/Resources/legality/wild/Gen9/encounter_za.pkl",
+    "PKHeX.Core/Resources/legality/wild/Gen9/encounter_hyperspace_za.pkl",
+    "PKHeX.Core/Resources/text/locations/gen9a/*",
+    "PKHeX.Core/Resources/text/other/*/text_Species_*"
+  ],
+  "counts": {
+    "pokemon": 413,
+    "pokemonForms": 413,
+    "encounters": 2488,
+    "evolvedEncountersAdded": 56
+  },
+  "limitations": [
+    "Ball legality for non-fixed wild/static encounters is exposed as AnyLegalWildBall and should be refined by game ball list if you want a front-end dropdown.",
+    "This export parses the PKHeX.Core source and binary encounter resources directly; it does not execute PKHeX legal generation because dotnet is not available in this sandbox."
+  ],
+  "notes": [
+    "Se añadieron entradas evolution-only para Pokémon legales que no tienen encuentro directo, heredando el origen de su preevolución. Ejemplo: Gholdengo desde Gimmighoul."
+  ]
+}

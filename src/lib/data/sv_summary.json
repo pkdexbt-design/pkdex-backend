@@ -1,0 +1,18 @@
+{
+  "game": "sv",
+  "pokemonCount": 782,
+  "encounterCount": 41861,
+  "methods": [
+    "7-Star Raid",
+    "Distribution Raid",
+    "Evolved",
+    "Fixed Spawn",
+    "Outbreak",
+    "Static",
+    "Tera Raid",
+    "Trade",
+    "Wild"
+  ],
+  "locationsCount": 68,
+  "splitFiles": 782
+}

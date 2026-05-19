@@ -1,0 +1,15 @@
+{
+  "game": "za",
+  "pokemonCount": 413,
+  "encounterCount": 2488,
+  "methods": [
+    "Evolved",
+    "Gift",
+    "Hyperspace",
+    "Static",
+    "Trade",
+    "Wild"
+  ],
+  "locationsCount": 104,
+  "splitFiles": 413
+}

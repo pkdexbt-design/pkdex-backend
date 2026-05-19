@@ -1,0 +1,9 @@
+{
+  "name": "Pokémon Legal Trade Orders",
+  "version": "stable-combined-1.0.0",
+  "games": {
+    "za": "Legends: Z-A",
+    "sv": "Scarlet / Violet"
+  },
+  "note": "Encuentros separados por juego/especie-forma para evitar cargar JSON enormes en memoria."
+}

@@ -42,6 +42,10 @@ export interface PokemonData {
   gender?: 'M' | 'F' | 'N'
   form?: string
   gameVersion?: GameVersion
+  pokeball?: string
+  locationId?: number
+  isAlpha?: boolean
+  teraType?: string
 }
 
 export interface ValidationError {

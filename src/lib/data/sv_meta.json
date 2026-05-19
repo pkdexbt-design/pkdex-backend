@@ -1,0 +1,30 @@
+{
+  "name": "SV PKHeX Legal Backend",
+  "game": "Scarlet/Violet",
+  "source": "PKHeX-master.zip uploaded by user",
+  "generatedFrom": [
+    "PKHeX.Core/Legality/Encounters/Data/Gen9/Encounters9.cs",
+    "PKHeX.Core/Resources/legality/wild/Gen9/encounter_wild_paldea.pkl",
+    "encounter_fixed_paldea.pkl",
+    "encounter_gem_paldea.pkl",
+    "encounter_gem_kitakami.pkl",
+    "encounter_gem_blueberry.pkl",
+    "encounter_dist_paldea.pkl",
+    "encounter_might_paldea.pkl",
+    "encounter_outbreak_paldea.pkl",
+    "PKHeX.Core/Resources/text/locations/gen9/*"
+  ],
+  "counts": {
+    "pokemon": 782,
+    "pokemonForms": 782,
+    "encounters": 41861,
+    "evolvedEncountersAdded": 959
+  },
+  "limitations": [
+    "Las balls no fijas se devuelven como AnyLegalWildBall/lista configurable, igual que hicimos en la base ZA.",
+    "Los Tera Raid/Event Raids están exportados como opciones de encuentro; la disponibilidad exacta por evento temporal puede depender de datos/eventos activos externos."
+  ],
+  "notes": [
+    "Se añadieron entradas evolution-only para Pokémon legales que no tienen encuentro directo, heredando el origen de su preevolución. Ejemplo: Gholdengo desde Gimmighoul."
+  ]
+}

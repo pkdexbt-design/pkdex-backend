@@ -1,0 +1,1382 @@
+[
+  {
+    "value": 0,
+    "text": "——————"
+  },
+  {
+    "value": 60002,
+    "text": "a Nursery worker"
+  },
+  {
+    "value": 30002,
+    "text": "a Link Trade (2)"
+  },
+  {
+    "value": 76,
+    "text": "Académie Étoile"
+  },
+  {
+    "value": 175,
+    "text": "Atelier Heads"
+  },
+  {
+    "value": 14,
+    "text": "Autumnal Avenue"
+  },
+  {
+    "value": 39,
+    "text": "Aymlis Park"
+  },
+  {
+    "value": 138,
+    "text": "BRAVELY"
+  },
+  {
+    "value": 213,
+    "text": "Battle Zone"
+  },
+  {
+    "value": 7,
+    "text": "Bleu District"
+  },
+  {
+    "value": 49,
+    "text": "Bleu Plaza"
+  },
+  {
+    "value": 110,
+    "text": "Bleu Plaza (2)"
+  },
+  {
+    "value": 112,
+    "text": "Bleu Pokémon Center"
+  },
+  {
+    "value": 37,
+    "text": "Bleu Sector 1"
+  },
+  {
+    "value": 48,
+    "text": "Bleu Sector 10"
+  },
+  {
+    "value": 42,
+    "text": "Bleu Sector 2"
+  },
+  {
+    "value": 38,
+    "text": "Bleu Sector 3"
+  },
+  {
+    "value": 43,
+    "text": "Bleu Sector 4"
+  },
+  {
+    "value": 40,
+    "text": "Bleu Sector 5"
+  },
+  {
+    "value": 45,
+    "text": "Bleu Sector 6"
+  },
+  {
+    "value": 41,
+    "text": "Bleu Sector 7"
+  },
+  {
+    "value": 46,
+    "text": "Bleu Sector 8"
+  },
+  {
+    "value": 47,
+    "text": "Bleu Sector 9"
+  },
+  {
+    "value": 33,
+    "text": "Bleu Street"
+  },
+  {
+    "value": 34,
+    "text": "Bleu Street (2)"
+  },
+  {
+    "value": 130,
+    "text": "Boutique Couture"
+  },
+  {
+    "value": 167,
+    "text": "Bundle Up"
+  },
+  {
+    "value": 191,
+    "text": "Café Action!"
+  },
+  {
+    "value": 192,
+    "text": "Café Bataille"
+  },
+  {
+    "value": 133,
+    "text": "Café Classe"
+  },
+  {
+    "value": 132,
+    "text": "Café Cyclone"
+  },
+  {
+    "value": 153,
+    "text": "Café Gallant"
+  },
+  {
+    "value": 134,
+    "text": "Café Introversion"
+  },
+  {
+    "value": 189,
+    "text": "Café Kizuna"
+  },
+  {
+    "value": 151,
+    "text": "Café Pokémon-Amie"
+  },
+  {
+    "value": 152,
+    "text": "Café Rouleau"
+  },
+  {
+    "value": 148,
+    "text": "Café Soleil"
+  },
+  {
+    "value": 154,
+    "text": "Café Triste"
+  },
+  {
+    "value": 190,
+    "text": "Café Ultimo"
+  },
+  {
+    "value": 147,
+    "text": "Café Woof"
+  },
+  {
+    "value": 11,
+    "text": "Centrico Plaza"
+  },
+  {
+    "value": 121,
+    "text": "Centrico Pokémon Center"
+  },
+  {
+    "value": 129,
+    "text": "Changing Gears"
+  },
+  {
+    "value": 146,
+    "text": "Coiffure Clips"
+  },
+  {
+    "value": 23,
+    "text": "Coulant Waterway"
+  },
+  {
+    "value": 144,
+    "text": "DEFOG Eyewear"
+  },
+  {
+    "value": 173,
+    "text": "DENSOKU Lumiose"
+  },
+  {
+    "value": 139,
+    "text": "Dessert du Moment"
+  },
+  {
+    "value": 78,
+    "text": "Dormez Bien Cemetery"
+  },
+  {
+    "value": 58,
+    "text": "Electrical Substation"
+  },
+  {
+    "value": 135,
+    "text": "Empty Room (Abandoned Building)"
+  },
+  {
+    "value": 44,
+    "text": "Espace Vide"
+  },
+  {
+    "value": 13,
+    "text": "Estival Avenue"
+  },
+  {
+    "value": 172,
+    "text": "FILMFAN"
+  },
+  {
+    "value": 4,
+    "text": "Faraway place (-)"
+  },
+  {
+    "value": 137,
+    "text": "Fresh Fits"
+  },
+  {
+    "value": 216,
+    "text": "Galerie de la Lune"
+  },
+  {
+    "value": 109,
+    "text": "Gare de Lumiose"
+  },
+  {
+    "value": 223,
+    "text": "Gare de Lumiose (2)"
+  },
+  {
+    "value": 176,
+    "text": "Glammor Cuti"
+  },
+  {
+    "value": 163,
+    "text": "Glammor Girli"
+  },
+  {
+    "value": 164,
+    "text": "Glammor Pretti"
+  },
+  {
+    "value": 165,
+    "text": "Glammor Sporti"
+  },
+  {
+    "value": 126,
+    "text": "Hair Salon"
+  },
+  {
+    "value": 15,
+    "text": "Hibernal Avenue"
+  },
+  {
+    "value": 125,
+    "text": "Hibernal Pokémon Center"
+  },
+  {
+    "value": 119,
+    "text": "Hotel Richissime"
+  },
+  {
+    "value": 221,
+    "text": "Hotel Richissime (2)"
+  },
+  {
+    "value": 102,
+    "text": "Hotel Z"
+  },
+  {
+    "value": 219,
+    "text": "Hotel Z (2)"
+  },
+  {
+    "value": 141,
+    "text": "In the Zone"
+  },
+  {
+    "value": 10,
+    "text": "Jaune District"
+  },
+  {
+    "value": 98,
+    "text": "Jaune Plaza"
+  },
+  {
+    "value": 122,
+    "text": "Jaune Plaza (2)"
+  },
+  {
+    "value": 124,
+    "text": "Jaune Pokémon Center"
+  },
+  {
+    "value": 85,
+    "text": "Jaune Sector 1"
+  },
+  {
+    "value": 95,
+    "text": "Jaune Sector 10"
+  },
+  {
+    "value": 96,
+    "text": "Jaune Sector 11"
+  },
+  {
+    "value": 97,
+    "text": "Jaune Sector 12"
+  },
+  {
+    "value": 91,
+    "text": "Jaune Sector 2"
+  },
+  {
+    "value": 86,
+    "text": "Jaune Sector 3"
+  },
+  {
+    "value": 87,
+    "text": "Jaune Sector 4"
+  },
+  {
+    "value": 88,
+    "text": "Jaune Sector 5"
+  },
+  {
+    "value": 93,
+    "text": "Jaune Sector 6"
+  },
+  {
+    "value": 89,
+    "text": "Jaune Sector 7"
+  },
+  {
+    "value": 90,
+    "text": "Jaune Sector 8"
+  },
+  {
+    "value": 94,
+    "text": "Jaune Sector 9"
+  },
+  {
+    "value": 81,
+    "text": "Jaune Street"
+  },
+  {
+    "value": 82,
+    "text": "Jaune Street (2)"
+  },
+  {
+    "value": 123,
+    "text": "Justice Dojo"
+  },
+  {
+    "value": 218,
+    "text": "Justice Dojo (2)"
+  },
+  {
+    "value": 142,
+    "text": "Kickspin"
+  },
+  {
+    "value": 177,
+    "text": "Kikonashi"
+  },
+  {
+    "value": 184,
+    "text": "La Tornade"
+  },
+  {
+    "value": 157,
+    "text": "Le Passe-temps"
+  },
+  {
+    "value": 183,
+    "text": "Le Pays des Pieds"
+  },
+  {
+    "value": 181,
+    "text": "Le Pays des Vêtements"
+  },
+  {
+    "value": 174,
+    "text": "Les Chaussures"
+  },
+  {
+    "value": 105,
+    "text": "Looker Bureau"
+  },
+  {
+    "value": 229,
+    "text": "Looker Bureau (2)"
+  },
+  {
+    "value": 100,
+    "text": "Lumiose Museum"
+  },
+  {
+    "value": 232,
+    "text": "Lumiose Museum (2)"
+  },
+  {
+    "value": 150,
+    "text": "Lumiose Sewers"
+  },
+  {
+    "value": 188,
+    "text": "Lumiose Sewers (2)"
+  },
+  {
+    "value": 115,
+    "text": "Lysandre Café"
+  },
+  {
+    "value": 233,
+    "text": "Lysandre Café (2)"
+  },
+  {
+    "value": 234,
+    "text": "Lysandre Labs"
+  },
+  {
+    "value": 8,
+    "text": "Magenta District"
+  },
+  {
+    "value": 65,
+    "text": "Magenta Plaza"
+  },
+  {
+    "value": 114,
+    "text": "Magenta Plaza (2)"
+  },
+  {
+    "value": 117,
+    "text": "Magenta Plaza Pokémon Center"
+  },
+  {
+    "value": 116,
+    "text": "Magenta Pokémon Center"
+  },
+  {
+    "value": 54,
+    "text": "Magenta Sector 1"
+  },
+  {
+    "value": 59,
+    "text": "Magenta Sector 2"
+  },
+  {
+    "value": 55,
+    "text": "Magenta Sector 3"
+  },
+  {
+    "value": 60,
+    "text": "Magenta Sector 4"
+  },
+  {
+    "value": 56,
+    "text": "Magenta Sector 5"
+  },
+  {
+    "value": 57,
+    "text": "Magenta Sector 6"
+  },
+  {
+    "value": 61,
+    "text": "Magenta Sector 7"
+  },
+  {
+    "value": 63,
+    "text": "Magenta Sector 8"
+  },
+  {
+    "value": 64,
+    "text": "Magenta Sector 9"
+  },
+  {
+    "value": 50,
+    "text": "Magenta Street"
+  },
+  {
+    "value": 51,
+    "text": "Magenta Street (2)"
+  },
+  {
+    "value": 140,
+    "text": "Marché Bleu"
+  },
+  {
+    "value": 162,
+    "text": "Marquage"
+  },
+  {
+    "value": 180,
+    "text": "Masterpiece"
+  },
+  {
+    "value": 168,
+    "text": "Midnight Rite"
+  },
+  {
+    "value": 171,
+    "text": "Mode Magnifique"
+  },
+  {
+    "value": 169,
+    "text": "Mode Mature"
+  },
+  {
+    "value": 2,
+    "text": "Mystery Zone"
+  },
+  {
+    "value": 166,
+    "text": "NIGHTSIDE"
+  },
+  {
+    "value": 160,
+    "text": "Naptime"
+  },
+  {
+    "value": 53,
+    "text": "North Boulevard"
+  },
+  {
+    "value": 68,
+    "text": "North Boulevard (2)"
+  },
+  {
+    "value": 69,
+    "text": "North Boulevard (3)"
+  },
+  {
+    "value": 83,
+    "text": "North Boulevard (4)"
+  },
+  {
+    "value": 84,
+    "text": "North Boulevard (5)"
+  },
+  {
+    "value": 231,
+    "text": "Old Building"
+  },
+  {
+    "value": 215,
+    "text": "Passage Ombragé"
+  },
+  {
+    "value": 214,
+    "text": "Passage de la Félicité"
+  },
+  {
+    "value": 217,
+    "text": "Passage du Palais"
+  },
+  {
+    "value": 159,
+    "text": "Pinceau"
+  },
+  {
+    "value": 128,
+    "text": "Poké Ball Boutique"
+  },
+  {
+    "value": 103,
+    "text": "Pokémon Research Lab"
+  },
+  {
+    "value": 230,
+    "text": "Pokémon Research Lab (2)"
+  },
+  {
+    "value": 158,
+    "text": "Porte-Chance"
+  },
+  {
+    "value": 104,
+    "text": "Prism Tower"
+  },
+  {
+    "value": 99,
+    "text": "Promenade du Vent"
+  },
+  {
+    "value": 62,
+    "text": "Quasartico Inc."
+  },
+  {
+    "value": 106,
+    "text": "Quasartico Inc. (2)"
+  },
+  {
+    "value": 224,
+    "text": "Quasartico Inc. (3)"
+  },
+  {
+    "value": 107,
+    "text": "Racine Construction"
+  },
+  {
+    "value": 220,
+    "text": "Racine Construction (2)"
+  },
+  {
+    "value": 131,
+    "text": "Restaurant Le Nah"
+  },
+  {
+    "value": 225,
+    "text": "Restaurant Le Nah (2)"
+  },
+  {
+    "value": 187,
+    "text": "Restaurant Le Wow"
+  },
+  {
+    "value": 227,
+    "text": "Restaurant Le Wow (2)"
+  },
+  {
+    "value": 185,
+    "text": "Restaurant Le Yeah"
+  },
+  {
+    "value": 226,
+    "text": "Restaurant Le Yeah (2)"
+  },
+  {
+    "value": 9,
+    "text": "Rouge District"
+  },
+  {
+    "value": 80,
+    "text": "Rouge Plaza"
+  },
+  {
+    "value": 118,
+    "text": "Rouge Plaza (2)"
+  },
+  {
+    "value": 120,
+    "text": "Rouge Pokémon Center"
+  },
+  {
+    "value": 70,
+    "text": "Rouge Sector 1"
+  },
+  {
+    "value": 75,
+    "text": "Rouge Sector 2"
+  },
+  {
+    "value": 71,
+    "text": "Rouge Sector 3"
+  },
+  {
+    "value": 72,
+    "text": "Rouge Sector 4"
+  },
+  {
+    "value": 73,
+    "text": "Rouge Sector 5"
+  },
+  {
+    "value": 77,
+    "text": "Rouge Sector 6"
+  },
+  {
+    "value": 74,
+    "text": "Rouge Sector 7"
+  },
+  {
+    "value": 79,
+    "text": "Rouge Sector 8"
+  },
+  {
+    "value": 66,
+    "text": "Rouge Street"
+  },
+  {
+    "value": 67,
+    "text": "Rouge Street (2)"
+  },
+  {
+    "value": 111,
+    "text": "Rust Syndicate Office"
+  },
+  {
+    "value": 222,
+    "text": "Rust Syndicate Office (2)"
+  },
+  {
+    "value": 178,
+    "text": "SUBATOMIC"
+  },
+  {
+    "value": 179,
+    "text": "SUBATOMIC 4"
+  },
+  {
+    "value": 16,
+    "text": "Saison Canal"
+  },
+  {
+    "value": 92,
+    "text": "Saison Canalside"
+  },
+  {
+    "value": 136,
+    "text": "Sewer Entrance"
+  },
+  {
+    "value": 149,
+    "text": "Shutterbug Café"
+  },
+  {
+    "value": 161,
+    "text": "Soil and Sneaks"
+  },
+  {
+    "value": 19,
+    "text": "South Boulevard"
+  },
+  {
+    "value": 20,
+    "text": "South Boulevard (2)"
+  },
+  {
+    "value": 35,
+    "text": "South Boulevard (3)"
+  },
+  {
+    "value": 36,
+    "text": "South Boulevard (4)"
+  },
+  {
+    "value": 52,
+    "text": "South Boulevard (5)"
+  },
+  {
+    "value": 26,
+    "text": "Station Front"
+  },
+  {
+    "value": 127,
+    "text": "Stone Emporium"
+  },
+  {
+    "value": 186,
+    "text": "Sushi High Roller"
+  },
+  {
+    "value": 228,
+    "text": "Sushi High Roller (2)"
+  },
+  {
+    "value": 235,
+    "text": "The Sewers"
+  },
+  {
+    "value": 155,
+    "text": "The Usual"
+  },
+  {
+    "value": 143,
+    "text": "Triathlon Bleu"
+  },
+  {
+    "value": 182,
+    "text": "Triathlon Rouge"
+  },
+  {
+    "value": 12,
+    "text": "Vernal Avenue"
+  },
+  {
+    "value": 113,
+    "text": "Vernal Pokémon Center"
+  },
+  {
+    "value": 6,
+    "text": "Vert District"
+  },
+  {
+    "value": 32,
+    "text": "Vert Plaza"
+  },
+  {
+    "value": 108,
+    "text": "Vert Plaza (2)"
+  },
+  {
+    "value": 101,
+    "text": "Vert Pokémon Center"
+  },
+  {
+    "value": 21,
+    "text": "Vert Sector 1"
+  },
+  {
+    "value": 27,
+    "text": "Vert Sector 2"
+  },
+  {
+    "value": 22,
+    "text": "Vert Sector 3"
+  },
+  {
+    "value": 28,
+    "text": "Vert Sector 4"
+  },
+  {
+    "value": 29,
+    "text": "Vert Sector 5"
+  },
+  {
+    "value": 24,
+    "text": "Vert Sector 6"
+  },
+  {
+    "value": 25,
+    "text": "Vert Sector 7"
+  },
+  {
+    "value": 30,
+    "text": "Vert Sector 8"
+  },
+  {
+    "value": 31,
+    "text": "Vert Sector 9"
+  },
+  {
+    "value": 17,
+    "text": "Vert Street"
+  },
+  {
+    "value": 18,
+    "text": "Vert Street (2)"
+  },
+  {
+    "value": 194,
+    "text": "Wild Zone 1"
+  },
+  {
+    "value": 197,
+    "text": "Wild Zone 10"
+  },
+  {
+    "value": 210,
+    "text": "Wild Zone 11"
+  },
+  {
+    "value": 196,
+    "text": "Wild Zone 12"
+  },
+  {
+    "value": 204,
+    "text": "Wild Zone 13"
+  },
+  {
+    "value": 200,
+    "text": "Wild Zone 14"
+  },
+  {
+    "value": 207,
+    "text": "Wild Zone 15"
+  },
+  {
+    "value": 199,
+    "text": "Wild Zone 16"
+  },
+  {
+    "value": 193,
+    "text": "Wild Zone 17"
+  },
+  {
+    "value": 202,
+    "text": "Wild Zone 18"
+  },
+  {
+    "value": 208,
+    "text": "Wild Zone 19"
+  },
+  {
+    "value": 195,
+    "text": "Wild Zone 2"
+  },
+  {
+    "value": 212,
+    "text": "Wild Zone 20"
+  },
+  {
+    "value": 206,
+    "text": "Wild Zone 3"
+  },
+  {
+    "value": 205,
+    "text": "Wild Zone 4"
+  },
+  {
+    "value": 198,
+    "text": "Wild Zone 5"
+  },
+  {
+    "value": 209,
+    "text": "Wild Zone 6"
+  },
+  {
+    "value": 203,
+    "text": "Wild Zone 7"
+  },
+  {
+    "value": 211,
+    "text": "Wild Zone 8"
+  },
+  {
+    "value": 201,
+    "text": "Wild Zone 9"
+  },
+  {
+    "value": 170,
+    "text": "Wisp"
+  },
+  {
+    "value": 156,
+    "text": "Énergie"
+  },
+  {
+    "value": 145,
+    "text": "Équipement"
+  },
+  {
+    "value": 282,
+    "text": "Hyperspace Desolate Land"
+  },
+  {
+    "value": 275,
+    "text": "Hyperspace Disaster Arena"
+  },
+  {
+    "value": 274,
+    "text": "Hyperspace Entry Point"
+  },
+  {
+    "value": 276,
+    "text": "Hyperspace Hunting Grounds"
+  },
+  {
+    "value": 279,
+    "text": "Hyperspace Infernal Arena"
+  },
+  {
+    "value": 273,
+    "text": "Hyperspace Lumiose"
+  },
+  {
+    "value": 280,
+    "text": "Hyperspace Newmoon Nightmare"
+  },
+  {
+    "value": 281,
+    "text": "Hyperspace Primordial Sea"
+  },
+  {
+    "value": 278,
+    "text": "Hyperspace Second-Sight Arena"
+  },
+  {
+    "value": 283,
+    "text": "Hyperspace Sky Pillar"
+  },
+  {
+    "value": 277,
+    "text": "Hyperspace Sushi Paradise"
+  },
+  {
+    "value": 30030,
+    "text": "Académie Étoile (-)"
+  },
+  {
+    "value": 30034,
+    "text": "Hyperspace Lumiose (-)"
+  },
+  {
+    "value": 30026,
+    "text": "Lumiose City"
+  },
+  {
+    "value": 30031,
+    "text": "Magenta Sector 2 (-)"
+  },
+  {
+    "value": 30032,
+    "text": "North Boulevard (-)"
+  },
+  {
+    "value": 30016,
+    "text": "Poké Pelago"
+  },
+  {
+    "value": 30012,
+    "text": "Pokémon GO"
+  },
+  {
+    "value": 30018,
+    "text": "Pokémon HOME"
+  },
+  {
+    "value": 30011,
+    "text": "Pokémon Link"
+  },
+  {
+    "value": 30035,
+    "text": "Quasartico Inc. (-)"
+  },
+  {
+    "value": 30033,
+    "text": "Rouge Sector 1 (-)"
+  },
+  {
+    "value": 30028,
+    "text": "Wild Zone 11 (-)"
+  },
+  {
+    "value": 30001,
+    "text": "a Link Trade"
+  },
+  {
+    "value": 30024,
+    "text": "a crystal cavern"
+  },
+  {
+    "value": 30007,
+    "text": "a distant land"
+  },
+  {
+    "value": 30023,
+    "text": "a picnic"
+  },
+  {
+    "value": 30015,
+    "text": "the Alola region"
+  },
+  {
+    "value": 30020,
+    "text": "the Galar region"
+  },
+  {
+    "value": 30021,
+    "text": "the Hisui region"
+  },
+  {
+    "value": 30005,
+    "text": "the Hoenn region"
+  },
+  {
+    "value": 30014,
+    "text": "the Hoenn region (2)"
+  },
+  {
+    "value": 30004,
+    "text": "the Johto region"
+  },
+  {
+    "value": 30017,
+    "text": "the Johto region (2)"
+  },
+  {
+    "value": 30010,
+    "text": "the Kalos region"
+  },
+  {
+    "value": 30003,
+    "text": "the Kanto region"
+  },
+  {
+    "value": 30013,
+    "text": "the Kanto region (2)"
+  },
+  {
+    "value": 30019,
+    "text": "the Kanto region (3)"
+  },
+  {
+    "value": 30029,
+    "text": "the Lumiose Museum (-)"
+  },
+  {
+    "value": 30025,
+    "text": "the Paldea region"
+  },
+  {
+    "value": 30027,
+    "text": "the Pokémon Research Lab (-)"
+  },
+  {
+    "value": 30006,
+    "text": "the Sinnoh region"
+  },
+  {
+    "value": 30022,
+    "text": "the Sinnoh region (2)"
+  },
+  {
+    "value": 30009,
+    "text": "the Unova region"
+  },
+  {
+    "value": 30008,
+    "text": "——————"
+  },
+  {
+    "value": 40020,
+    "text": "2025 Worlds"
+  },
+  {
+    "value": 40021,
+    "text": "2026 Worlds"
+  },
+  {
+    "value": 40022,
+    "text": "2027 Worlds"
+  },
+  {
+    "value": 40056,
+    "text": "GAME FREAK"
+  },
+  {
+    "value": 40049,
+    "text": "PokéPark"
+  },
+  {
+    "value": 40051,
+    "text": "PokéPark 2025"
+  },
+  {
+    "value": 40052,
+    "text": "PokéPark 2026"
+  },
+  {
+    "value": 40053,
+    "text": "PokéPark 2027"
+  },
+  {
+    "value": 40054,
+    "text": "PokéPark 2028"
+  },
+  {
+    "value": 40066,
+    "text": "Pokémon Bank"
+  },
+  {
+    "value": 40011,
+    "text": "Pokémon Center Tohoku"
+  },
+  {
+    "value": 40065,
+    "text": "Pokémon GO (-)"
+  },
+  {
+    "value": 40070,
+    "text": "Pokémon HOME (-)"
+  },
+  {
+    "value": 40026,
+    "text": "VGE 2025"
+  },
+  {
+    "value": 40027,
+    "text": "VGE 2026"
+  },
+  {
+    "value": 40029,
+    "text": "VGE 2028"
+  },
+  {
+    "value": 40014,
+    "text": "WCS 2025"
+  },
+  {
+    "value": 40015,
+    "text": "WCS 2026"
+  },
+  {
+    "value": 40016,
+    "text": "WCS 2027"
+  },
+  {
+    "value": 40017,
+    "text": "WCS 2028"
+  },
+  {
+    "value": 40018,
+    "text": "Worlds"
+  },
+  {
+    "value": 40039,
+    "text": "a 2025 Pokémon event"
+  },
+  {
+    "value": 40045,
+    "text": "a 2025 Pokémon event (2)"
+  },
+  {
+    "value": 40005,
+    "text": "a 2025 Pokémon movie"
+  },
+  {
+    "value": 40040,
+    "text": "a 2026 Pokémon event"
+  },
+  {
+    "value": 40046,
+    "text": "a 2026 Pokémon event (2)"
+  },
+  {
+    "value": 40006,
+    "text": "a 2026 Pokémon movie"
+  },
+  {
+    "value": 40041,
+    "text": "a 2027 Pokémon event"
+  },
+  {
+    "value": 40047,
+    "text": "a 2027 Pokémon event (2)"
+  },
+  {
+    "value": 40007,
+    "text": "a 2027 Pokémon movie"
+  },
+  {
+    "value": 40042,
+    "text": "a 2028 Pokémon event"
+  },
+  {
+    "value": 40048,
+    "text": "a 2028 Pokémon event (2)"
+  },
+  {
+    "value": 40008,
+    "text": "a 2028 Pokémon movie"
+  },
+  {
+    "value": 40031,
+    "text": "a Battle Competition"
+  },
+  {
+    "value": 40010,
+    "text": "a Pokémon Center"
+  },
+  {
+    "value": 40034,
+    "text": "a Pokémon TV program"
+  },
+  {
+    "value": 40030,
+    "text": "a Pokémon event"
+  },
+  {
+    "value": 40043,
+    "text": "a Pokémon event (2)"
+  },
+  {
+    "value": 40003,
+    "text": "a Pokémon movie"
+  },
+  {
+    "value": 40067,
+    "text": "a Pokémon shop"
+  },
+  {
+    "value": 40058,
+    "text": "a VGC event"
+  },
+  {
+    "value": 40024,
+    "text": "a VGE"
+  },
+  {
+    "value": 40024,
+    "text": "a VGE"
+  },
+  {
+    "value": 40064,
+    "text": "a Virtual Console game"
+  },
+  {
+    "value": 40012,
+    "text": "a WCS"
+  },
+  {
+    "value": 40035,
+    "text": "a concert"
+  },
+  {
+    "value": 40068,
+    "text": "a demo version"
+  },
+  {
+    "value": 40002,
+    "text": "a faraway place"
+  },
+  {
+    "value": 40032,
+    "text": "a game event"
+  },
+  {
+    "value": 40001,
+    "text": "a lovely place"
+  },
+  {
+    "value": 40057,
+    "text": "a stadium"
+  },
+  {
+    "value": 40055,
+    "text": "an event site"
+  },
+  {
+    "value": 40036,
+    "text": "an online present"
+  },
+  {
+    "value": 40037,
+    "text": "the PGL"
+  },
+  {
+    "value": 40069,
+    "text": "the Poké Ball Plus"
+  },
+  {
+    "value": 40033,
+    "text": "the Pokémon Daisuki Club"
+  },
+  {
+    "value": 40009,
+    "text": "the Pokémon animated show"
+  },
+  {
+    "value": 40060,
+    "text": "the VGC 2025"
+  },
+  {
+    "value": 40061,
+    "text": "the VGC 2026"
+  },
+  {
+    "value": 40062,
+    "text": "the VGC 2027"
+  },
+  {
+    "value": 40063,
+    "text": "the VGC 2028"
+  },
+  {
+    "value": 60005,
+    "text": "Lumiose City (-)"
+  },
+  {
+    "value": 60003,
+    "text": "a treasure hunter"
+  },
+  {
+    "value": 60004,
+    "text": "an old hot-springs visitor"
+  },
+  {
+    "value": 60001,
+    "text": "someone far away"
+  }
+]

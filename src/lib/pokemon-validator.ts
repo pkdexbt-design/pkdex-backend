@@ -13,6 +13,9 @@ import {
   VALID_NATURES
 } from './validation-rules'
 import { validateShowdown } from './showdown-validator'
+import { games, validate } from './gameDb'
+import * as fs from 'fs'
+import * as path from 'path'
 
 /**
  * Validates Pokemon stats (IVs and EVs)
@@ -155,10 +158,108 @@ export function validatePokemon(pokemon: PokemonData): ValidationResult {
  * This is the preferred endpoint for order creation.
  */
 export async function validatePokemonFull(pokemon: PokemonData): Promise<ValidationResult> {
+  const isZA = pokemon.gameVersion === 'legends-za';
+  const isSV = pokemon.gameVersion === 'scarlet' || pokemon.gameVersion === 'violet';
+
+  if (isZA || isSV) {
+    const gameId = isZA ? 'za' : 'sv';
+    const errors: ValidationError[] = [];
+    const warnings: ValidationWarning[] = [];
+
+    // 1. Basic required species
+    if (!pokemon.species || pokemon.species.trim() === '') {
+      errors.push({ field: 'species', message: 'Species is required' });
+      return { valid: false, errors, warnings };
+    }
+
+    // 2. Normalize and check if Pokémon is in the game database
+    const searchName = pokemon.species.toLowerCase().trim().replace(/\s+/g, '-');
+    const match = games[gameId].pokemon.find(p => 
+      p.name.toLowerCase() === searchName || 
+      p.displayName.toLowerCase().trim().replace(/\s+/g, '-') === searchName ||
+      p.displayName.toLowerCase().trim() === pokemon.species.toLowerCase().trim()
+    );
+
+    if (!match) {
+      errors.push({
+        field: 'species',
+        message: `El Pokémon "${pokemon.species}" no está disponible en ${isZA ? 'Legends: Z-A' : 'Scarlet / Violet'}.`
+      });
+      return { valid: false, errors, warnings };
+    }
+
+    const speciesId = match.species;
+    const formId = match.form;
+
+    // 3. Validate moves length (standard rules: 1-4, no duplicates)
+    if (pokemon.moves && pokemon.moves.length > 0) {
+      errors.push(...validateMoves(pokemon.moves));
+    }
+
+    // 4. Validate stats range
+    if (pokemon.stats) {
+      errors.push(...validateStats(pokemon.stats));
+    }
+
+    // 5. Run local database-driven encounter validation
+    const validationResult = validate(gameId, {
+      species: speciesId,
+      form: formId,
+      level: pokemon.level,
+      shiny: pokemon.isShiny,
+      alpha: pokemon.isAlpha,
+      ball: pokemon.pokeball,
+      gender: pokemon.gender,
+      gameVersion: pokemon.gameVersion,
+      teraType: pokemon.teraType
+    });
+
+    if (!validationResult.valid) {
+      validationResult.errors.forEach(err => {
+        errors.push({
+          field: 'encounter',
+          message: err
+        });
+      });
+    }
+
+    // 6. Gather Showdown core metadata (abilities list, HA status, gender rates) for Scarlet/Violet
+    let meta: any = {
+      genderRatio: 0.5,
+      possibleAbilities: [pokemon.ability || 'None']
+    };
+
+    if (isSV && pokemon.ability) {
+      try {
+        const showdownResult = await validateShowdown({
+          species: pokemon.species,
+          ability: pokemon.ability,
+          moves: pokemon.moves,
+          gender: pokemon.gender,
+        });
+        
+        meta = {
+          isHA: showdownResult.meta.isHA,
+          genderRatio: showdownResult.meta.genderRatio,
+          possibleAbilities: showdownResult.meta.possibleAbilities,
+        };
+      } catch (e) {
+        // ignore showdown errors to prevent blocking database validity
+      }
+    }
+
+    return {
+      valid: errors.length === 0,
+      errors,
+      warnings,
+      meta
+    };
+  }
+
   // Run sync validation first
-  const syncResult = validatePokemon(pokemon)
-  const errors = [...syncResult.errors]
-  const warnings: ValidationWarning[] = [...syncResult.warnings]
+  const syncResult = validatePokemon(pokemon);
+  const errors = [...syncResult.errors];
+  const warnings: ValidationWarning[] = [...syncResult.warnings];
 
   // Only run Showdown validation if species and ability are present
   if (pokemon.species && pokemon.ability) {
@@ -167,10 +268,10 @@ export async function validatePokemonFull(pokemon: PokemonData): Promise<Validat
       ability: pokemon.ability,
       moves: pokemon.moves,
       gender: pokemon.gender,
-    })
+    });
 
-    errors.push(...showdownResult.errors)
-    warnings.push(...showdownResult.warnings)
+    errors.push(...showdownResult.errors);
+    warnings.push(...showdownResult.warnings);
 
     return {
       valid: errors.length === 0,
@@ -181,8 +282,8 @@ export async function validatePokemonFull(pokemon: PokemonData): Promise<Validat
         genderRatio: showdownResult.meta.genderRatio,
         possibleAbilities: showdownResult.meta.possibleAbilities,
       },
-    }
+    };
   }
 
-  return { valid: errors.length === 0, errors, warnings }
+  return { valid: errors.length === 0, errors, warnings };
 }

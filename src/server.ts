@@ -6,6 +6,8 @@ import { corsMiddleware } from './middleware/cors'
 import { authMiddleware } from './middleware/auth'
 import validateRouter from './routes/validate'
 import ordersRouter from './routes/orders'
+import zaRouter from './routes/za'
+import svRouter from './routes/sv'
 
 // Load environment variables
 dotenv.config()
@@ -105,6 +107,8 @@ app.get('/debug/showdown', (req: express.Request, res: express.Response) => {
 // API Routes
 app.use('/api/validate', validateRouter)
 app.use('/api/orders', authMiddleware, ordersRouter)
+app.use('/api/za', zaRouter)
+app.use('/api/sv', svRouter)
 
 // 404 handler
 app.use((req, res) => {
