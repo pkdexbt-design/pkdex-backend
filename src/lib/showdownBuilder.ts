@@ -101,8 +101,13 @@ export function buildShowdownText(pokemon: PokemonBuildPayload, gameVersion?: st
   // ── Language ─────────────────────────────────────────────────────────
   // Sets the Pokémon's language tag. ALM uses this for name/form localization.
   // Default: Spanish (most common for this service).
+  // IMPORTANT: For strict event Pokémon (like Shiny Genesect), forcing 'Spanish'
+  // causes ALM to fail if the event is language-locked (e.g. Japanese). We omit it for them.
   const language = (pokemon as any).language ?? 'Spanish'
-  lines.push(`Language: ${language}`)
+  const strictEventSpecies = ['genesect', 'hoopa', 'volcanion', 'diancie', 'zarude', 'zeraora', 'marshadow', 'meloetta', 'victini', 'groudon', 'kyogre', 'rayquaza']
+  if (!strictEventSpecies.includes(pokemon.species.toLowerCase())) {
+    lines.push(`Language: ${language}`)
+  }
 
   // ── Tera Type (not applicable for Legends ZA) ────────────────────────
   if (pokemon.teraType && !isLegendsZA) {

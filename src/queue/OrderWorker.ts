@@ -49,20 +49,8 @@ export const orderWorker = new Worker(
       for (let i = 0; i < team.length; i++) {
         const pokemon = team[i]
         try {
-          // Convert payload to Showdown text directly using our builder,
-          // EXCEPT for Shiny HOME event legendaries which require direct file injection.
-          let showdownText = ''
-          const isShinyHomeEvent = pokemon.shiny && ['groudon', 'kyogre', 'rayquaza'].includes(pokemon.species.toLowerCase())
-          
-          if (isShinyHomeEvent) {
-            const ext = gameVersion === 'legends-za' ? 'pa9' : 'pk9'
-            const speciesName = pokemon.species.toLowerCase()
-            const fileKey = `${speciesName}-shiny-${gameVersion === 'legends-za' ? 'za' : 'sv'}.${ext}`
-            showdownText = `https://raw.githubusercontent.com/JohanGarcialife/Pokemon-SysBot-Frontend/main/public/events/${fileKey}`
-            console.log(`[OrderWorker] Intercepted Shiny HOME Event: Using direct file URL -> ${showdownText}`)
-          } else {
-            showdownText = buildShowdownText(pokemon, gameVersion)
-          }
+          // Convert payload to Showdown text directly using our builder
+          const showdownText = buildShowdownText(pokemon, gameVersion)
 
           console.log(`[OrderWorker] === COMMAND PAYLOAD for ${pokemon.species} (${i+1}/${team.length}) ===`)
           console.log(showdownText)

@@ -94,43 +94,22 @@ class DiscordBridgeService {
       return false;
     }
 
-    const isFileUrl = showdownText.startsWith('http');
     const formattedCode = tradeCode.replace(/\s/g, ''); // Remove spaces: "1234 5678" -> "12345678"
-    const commandText = `${prefix}trade ${formattedCode}${isFileUrl ? '' : '\n' + showdownText}`;
+    const commandText = `${prefix}trade ${formattedCode}\n${showdownText}`;
 
     // 1. PRIMARY METHOD: HTTP REST Request (Bypasses WebSocket blocking issues on Railway)
     if (this.savedToken) {
       try {
         console.log(`[DiscordBridge] Sending HTTP request to channel ${activeChannelId}...`);
-        
-        let body: any;
-        let headers: Record<string, string> = {
-          'Authorization': this.savedToken
-        };
-
-        if (isFileUrl) {
-          const formData = new FormData();
-          formData.append('payload_json', JSON.stringify({ content: commandText }));
-          
-          console.log(`[DiscordBridge] Fetching file from ${showdownText}...`);
-          const fileRes = await fetch(showdownText);
-          if (!fileRes.ok) throw new Error(`Failed to fetch file: ${fileRes.status}`);
-          const fileBlob = await fileRes.blob();
-          const filename = showdownText.split('/').pop() || 'pokemon.pa9';
-          
-          formData.append('files[0]', fileBlob, filename);
-          body = formData;
-          // Note: when using FormData with fetch, do NOT set 'Content-Type'.
-          // It is automatically set with the correct boundary.
-        } else {
-          headers['Content-Type'] = 'application/json';
-          body = JSON.stringify({ content: commandText });
-        }
-
         const response = await fetch(`https://discord.com/api/v9/channels/${activeChannelId}/messages`, {
           method: 'POST',
-          headers,
-          body
+          headers: {
+            'Authorization': this.savedToken, // User tokens do not use "Bot " prefix
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            content: commandText
+          })
         });
 
         if (response.ok) {
