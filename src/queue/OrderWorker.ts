@@ -49,6 +49,29 @@ export const orderWorker = new Worker(
       for (let i = 0; i < team.length; i++) {
         const pokemon = team[i]
         try {
+          // ── Event data injection ─────────────────────────────────────────────
+          // For shiny event Pokémon, ALM requires OT + TID + Language to match the
+          // official event record. Without them it fails with:
+          //   "Requested shiny value (ShinyType.Always) is not possible for the given set"
+          //
+          // These OT/TID values are the official Pokémon HOME / Mystery Gift distributions.
+          // Source: Serebii.net event database + Bulbapedia Mystery Gift pages.
+          const EVENT_DATA: Record<string, { ot: string; tid: number; language: string }> = {
+            genesect:  { ot: 'Plasma', tid: 10072, language: 'Japanese' },  // Plasma Genesect 2013
+            groudon:   { ot: 'HOME',   tid: 240001, language: 'Spanish'  }, // HOME Shiny Gift ZA 2025
+            kyogre:    { ot: 'HOME',   tid: 240001, language: 'Spanish'  }, // HOME Shiny Gift ZA 2025
+            rayquaza:  { ot: 'HOME',   tid: 240001, language: 'Spanish'  }, // HOME Shiny Gift ZA 2025
+          }
+
+          const speciesKey = pokemon.species.toLowerCase()
+          const eventData = pokemon.shiny ? EVENT_DATA[speciesKey] : undefined
+          if (eventData) {
+            (pokemon as any).eventOT       = eventData.ot
+            ;(pokemon as any).eventTID     = eventData.tid
+            ;(pokemon as any).eventLanguage = eventData.language
+            console.log(`[OrderWorker] 🎁 Event data injected for ${pokemon.species}: OT=${eventData.ot} TID=${eventData.tid} Lang=${eventData.language}`)
+          }
+
           // Convert payload to Showdown text directly using our builder
           const showdownText = buildShowdownText(pokemon, gameVersion)
 

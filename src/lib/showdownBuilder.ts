@@ -99,15 +99,31 @@ export function buildShowdownText(pokemon: PokemonBuildPayload, gameVersion?: st
   else if (pokemon.gender === 'F') lines.push('Gender: Female')
 
   // ── Language ─────────────────────────────────────────────────────────
-  // Sets the Pokémon's language tag. ALM uses this for name/form localization.
-  // Default: Spanish (most common for this service).
-  // IMPORTANT: For strict event Pokémon (like Shiny Genesect), forcing 'Spanish'
-  // causes ALM to fail if the event is language-locked (e.g. Japanese). We omit it for them.
-  const language = (pokemon as any).language ?? 'Spanish'
-  const strictEventSpecies = ['genesect', 'hoopa', 'volcanion', 'diancie', 'zarude', 'zeraora', 'marshadow', 'meloetta', 'victini', 'groudon', 'kyogre', 'rayquaza']
-  if (!strictEventSpecies.includes(pokemon.species.toLowerCase())) {
+  // Event Pokémon (Genesect, Groudon HOME, etc.) carry their own language from
+  // the event data payload. For regular Pokémon we default to Spanish.
+  // IMPORTANT: Strict event species (shiny) MUST NOT get a generic language since
+  // ALM uses Language + OT + TID together to identify the event record.
+  const eventLanguage = (pokemon as any).eventLanguage   // set by OrderWorker from event data
+  const language = eventLanguage ?? ((pokemon as any).language ?? 'Spanish')
+  const strictEventSpecies = [
+    'genesect', 'hoopa', 'volcanion', 'diancie', 'zarude', 'zeraora',
+    'marshadow', 'meloetta', 'victini', 'groudon', 'kyogre', 'rayquaza',
+  ]
+  const isStrictEvent = strictEventSpecies.includes(pokemon.species.toLowerCase())
+  // For strict events: only include Language if we have event-specific language data
+  if (!isStrictEvent || eventLanguage) {
     lines.push(`Language: ${language}`)
   }
+
+  // ── Event OT / TID (for Cherish Ball event Pokémon) ──────────────────
+  // These fields are CRITICAL for ALM to accept shiny event Pokémon.
+  // Without them ALM sets ShinyType.Always which fails event legality checks.
+  // Error: "Requested shiny value (ShinyType.Always) is not possible for the given set"
+  const eventOT  = (pokemon as any).eventOT
+  const eventTID = (pokemon as any).eventTID
+  if (eventOT)  lines.push(`OT: ${eventOT}`)
+  if (eventTID) lines.push(`TID: ${eventTID}`)
+
 
   // ── Tera Type (not applicable for Legends ZA) ────────────────────────
   if (pokemon.teraType && !isLegendsZA) {
