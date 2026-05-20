@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "tsc && mkdir -p dist/lib && cp -r src/lib/data dist/lib/",
     "start": "node dist/server.js",
     "test": "vitest"
   },
