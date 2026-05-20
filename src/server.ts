@@ -8,6 +8,8 @@ import validateRouter from './routes/validate'
 import ordersRouter from './routes/orders'
 import zaRouter from './routes/za'
 import svRouter from './routes/sv'
+import paymentsRouter from './routes/payments'
+
 
 // Load environment variables
 dotenv.config()
@@ -109,6 +111,8 @@ app.use('/api/validate', validateRouter)
 app.use('/api/orders', authMiddleware, ordersRouter)
 app.use('/api/za', zaRouter)
 app.use('/api/sv', svRouter)
+app.use('/api/payments', paymentsRouter)
+
 
 // 404 handler
 app.use((req, res) => {
