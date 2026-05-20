@@ -1,0 +1,64 @@
+{
+  "description": "Capa de reglas HOME para PKDEX. HOME se muestra como origen legal separado y no elimina los shiny locks nativos.",
+  "supportedGames": [
+    "za",
+    "sv"
+  ],
+  "rules": {
+    "canTransferIfSpeciesExistsInGame": true,
+    "nativeEncounterShinyLockStillApplies": true,
+    "homeEncounterCanBeShinyOnlyIfLegalOriginExists": true,
+    "finalValidationExpectedInSysBotPKHeX": true,
+    "homeIsNotGenericLevel1to100": true,
+    "homeUsesOriginProfiles": true
+  },
+  "shinyNeverSpecies": [
+    494,
+    647,
+    648,
+    720,
+    721,
+    801,
+    802,
+    893,
+    905
+  ],
+  "shinyForceAllow": [
+    6,
+    150,
+    249,
+    250,
+    380,
+    381,
+    382,
+    383,
+    384,
+    638,
+    639,
+    640
+  ],
+  "importantExamples": [
+    {
+      "species": 383,
+      "name": "Groudon",
+      "game": "za",
+      "native": "Static en Z-A: shiny locked",
+      "home": "HOME - Evento Ultra Shiny Groudon: shiny obligatorio, Nv. 60, Cherish Ball; o HOME - origen legendario legal anterior con nivel mínimo seguro."
+    },
+    {
+      "species": 6,
+      "name": "Charizard",
+      "game": "sv",
+      "native": "7-Star Raid en Scarlet/Violet: shiny locked",
+      "home": "HOME - Charizard shiny legal de juego anterior: nivel mínimo 36, shiny permitido; no usa la 7-Star Raid shiny locked."
+    },
+    {
+      "species": 721,
+      "name": "Volcanion",
+      "game": "za",
+      "native": "Static/evento nativo: shiny locked",
+      "home": "Bloqueado shiny por no conocerse ruta shiny legal"
+    }
+  ],
+  "homeOriginProfilesFile": "data/home_origin_profiles.json"
+}

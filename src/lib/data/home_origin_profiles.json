@@ -1,0 +1,40 @@
+{
+  "description": "Perfiles HOME utilizados por PKDEX. HOME ya no es un comodín 1-100: cada entrada HOME aplica un perfil de origen legal, con nivel mínimo y, cuando procede, ball/shiny fijo.",
+  "importantRule": "Los encuentros nativos shiny locked siguen bloqueados. HOME aparece como origen separado y exige origen legal previo validable por PKHeX/SysBot.",
+  "genericRules": {
+    "legendaryMinLevel": 50,
+    "evolutionMinLevelMap": "Implementado en src/server.js como HOME_MIN_LEVEL_BY_SPECIES",
+    "finalValidation": "PKHeX/SysBot debe validar met data, origin game, PID/EC, moves, ball y ribbons cuando genere el archivo final."
+  },
+  "specificProfiles": [
+    {
+      "species": 383,
+      "name": "Groudon",
+      "games": [
+        "za",
+        "sv"
+      ],
+      "profile": "HOME - Evento Ultra Shiny Groudon",
+      "level": 60,
+      "ball": "Cherish Ball",
+      "shiny": "Always",
+      "ability": "Drought",
+      "nature": "Random",
+      "sourceNote": "Evento Ultra Shiny Groudon documentado por Project Pokémon."
+    },
+    {
+      "species": 6,
+      "name": "Charizard",
+      "games": [
+        "za",
+        "sv"
+      ],
+      "profile": "HOME - Charizard shiny legal de juego anterior",
+      "levelMin": 36,
+      "levelMax": 100,
+      "ball": "AnyLegalTransferBall",
+      "shiny": "Allowed",
+      "sourceNote": "Para evitar usar el 7-Star Raid shiny locked como origen shiny."
+    }
+  ]
+}
