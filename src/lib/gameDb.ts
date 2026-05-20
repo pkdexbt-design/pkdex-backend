@@ -197,7 +197,7 @@ export function makeHomeTransferEncounters(gameId: string, species: number, form
     id: `home-legal-origin-${gameId}-${sp}-${Number(form||0)}`,
     game: gameId.toUpperCase(),
     version: isSV ? 'Scarlet/Violet' : 'Legends: Z-A',
-    source: 'Generic HOME legal origin profile layered over PKHeX species availability',
+    source: 'Generic HOME legal origin profile',
     method: 'HOME Legal Transfer',
     originType: 'home-legal-transfer',
     requiresLegalOrigin: true,
@@ -218,8 +218,8 @@ export function makeHomeTransferEncounters(gameId: string, species: number, form
     availableViolet: true,
     teraType: isSV ? 'Any' : undefined,
     note: shinyAllowed
-      ? `Origen externo: Este Pokémon se importará mediante transferencia segura. Requiere haber sido obtenido legalmente en juegos previos para evitar bloqueos online.`
-      : 'Origen externo: Este Pokémon se importará mediante transferencia segura. La versión shiny está bloqueada porque no existe un método legal de obtención shiny.'
+      ? `Origen externo: Este Pokémon proviene de un juego anterior y se transferirá de forma segura a través de Pokémon HOME. Asegúrate de haberlo obtenido legalmente.`
+      : 'Origen externo: Este Pokémon proviene de un juego anterior. La versión shiny no está disponible porque no existe un método legal de obtención shiny para esta especie.'
   });
   
   return base;
