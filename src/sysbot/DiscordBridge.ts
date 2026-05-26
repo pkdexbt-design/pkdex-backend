@@ -82,11 +82,13 @@ class DiscordBridgeService {
     }
   }
 
-  /**
-   * Sends the trade command to a specific channel.
-   * If overrideChannelId is provided, it uses that instead of targetChannelId.
-   */
-  public async sendTradeCommand(showdownText: string, tradeCode: string, overrideChannelId?: string, prefix: string = '!'): Promise<boolean> {
+  public async sendTradeCommand(
+    showdownText: string,
+    tradeCode: string,
+    overrideChannelId?: string,
+    prefix: string = '!',
+    attachment?: { buffer: Buffer; filename: string }
+  ): Promise<boolean> {
     const activeChannelId = overrideChannelId || this.targetChannelId;
 
     if (!activeChannelId) {
@@ -95,22 +97,43 @@ class DiscordBridgeService {
     }
 
     const formattedCode = tradeCode.replace(/\s/g, ''); // Remove spaces: "1234 5678" -> "12345678"
-    const commandText = `${prefix}trade ${formattedCode}\n${showdownText}`;
+    const commandText = attachment
+      ? `${prefix}trade ${formattedCode}`
+      : `${prefix}trade ${formattedCode}\n${showdownText}`;
 
     // 1. PRIMARY METHOD: HTTP REST Request (Bypasses WebSocket blocking issues on Railway)
     if (this.savedToken) {
       try {
         console.log(`[DiscordBridge] Sending HTTP request to channel ${activeChannelId}...`);
-        const response = await fetch(`https://discord.com/api/v9/channels/${activeChannelId}/messages`, {
-          method: 'POST',
-          headers: {
-            'Authorization': this.savedToken, // User tokens do not use "Bot " prefix
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
+        
+        let response;
+        if (attachment) {
+          const formData = new FormData();
+          formData.append('payload_json', JSON.stringify({
             content: commandText
-          })
-        });
+          }));
+          const blob = new Blob([new Uint8Array(attachment.buffer)]);
+          formData.append('files[0]', blob, attachment.filename);
+
+          response = await fetch(`https://discord.com/api/v9/channels/${activeChannelId}/messages`, {
+            method: 'POST',
+            headers: {
+              'Authorization': this.savedToken
+            },
+            body: formData
+          });
+        } else {
+          response = await fetch(`https://discord.com/api/v9/channels/${activeChannelId}/messages`, {
+            method: 'POST',
+            headers: {
+              'Authorization': this.savedToken, // User tokens do not use "Bot " prefix
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              content: commandText
+            })
+          });
+        }
 
         if (response.ok) {
           console.log('[DiscordBridge] ✅ Command sent via HTTP REST!');
@@ -140,7 +163,17 @@ class DiscordBridgeService {
       const channel = await this.client.channels.fetch(activeChannelId);
       if (channel && channel.isText()) {
         console.log(`[DiscordBridge] Sending via WebSocket to channel ${activeChannelId}:\n${commandText}`);
-        await (channel as any).send(commandText);
+        if (attachment) {
+          await (channel as any).send({
+            content: commandText,
+            files: [{
+              attachment: attachment.buffer,
+              name: attachment.filename
+            }]
+          });
+        } else {
+          await (channel as any).send(commandText);
+        }
         console.log('[DiscordBridge] ✅ Command sent via WebSocket!');
         return true;
       } else {

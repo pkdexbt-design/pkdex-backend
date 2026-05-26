@@ -1,31 +1,202 @@
-import { PokemonBuildPayload } from './order-types'
+import { readFileSync, existsSync } from 'node:fs';
+import { join } from 'node:path';
 
-/**
- * Converts a PokemonBuildPayload to a Showdown-format string.
- * This format is understood by PKHeX's AutoLegalityMod (ALM)
- * and will produce a valid, legal .pk9 / .pk1-9 file.
- *
- * Supported ALM extensions beyond base Showdown format:
- *   Ball: Master Ball
- *   Alpha: Yes            (Legends ZA)
- *   Shiny: Yes
- *   Language: spa
- *
- * Example for Legends ZA:
- *   Charmander
- *   Ability: Blaze
- *   Level: 50
- *   Ball: Poké Ball
- *   Jolly Nature
- *   - Ember
- *   - Growl
- *   - Scratch
- *   - Smokescreen
- */
+export interface StatValues {
+  hp: number
+  attack: number
+  defense: number
+  spAttack: number
+  spDefense: number
+  speed: number
+}
+
+export interface PokemonBuildPayload {
+  species: string
+  dexId?: number
+  form?: number
+  level: number
+  nature: string
+  ability: string
+  shiny: boolean
+  alpha: boolean
+  gender: string
+  heldItem: string
+  teraType: string
+  pokeball: string
+  origin: string
+  moves: string[]
+  ivs: StatValues
+  evs: StatValues
+  game?: string
+  encounter?: Record<string, any>
+  isAlphaEncounter?: boolean
+  homeProfileId?: string | null
+}
 
 const LEGENDS_ZA_GAME = 'legends-za'
+const ZA_GAME_ID = 'za'
 
-// Ball name mappings (Showdown → ALM-accepted names)
+// ─── Showdown Aliases ─────────────────────────────────────────────────────────
+// Load the alias map once (at module init) to convert visual names → Showdown names
+let _aliasMap: Record<string, string> | null = null;
+
+function loadAliasMap(): Record<string, string> {
+  if (_aliasMap) return _aliasMap;
+  try {
+    const aliasPath = join(process.cwd(), 'data', 'showdown_aliases.json');
+    if (existsSync(aliasPath)) {
+      _aliasMap = JSON.parse(readFileSync(aliasPath, 'utf8'));
+    } else {
+      _aliasMap = {};
+    }
+  } catch {
+    _aliasMap = {};
+  }
+  return _aliasMap!;
+}
+
+/**
+ * Convert a visual display name (Spanish or English) to the Showdown-compatible
+ * species name that SysBot / Auto-Legality can parse.
+ * Falls back to formatSpeciesName() for anything not in the alias map.
+ */
+export function getShowdownSpeciesName(order: PokemonBuildPayload): string {
+  const aliases = loadAliasMap();
+  
+  // 1. Try species ID + form mapping first (extremely accurate)
+  const dexId = order.dexId ?? (typeof order.species === 'number' ? order.species : (!isNaN(Number(order.species)) ? Number(order.species) : undefined));
+  const form = order.form ?? 0;
+
+  if (dexId !== undefined) {
+    if (dexId === 676) { // Furfrou
+      const furfrouForms: Record<number, string> = {
+        0: 'Furfrou',
+        1: 'Furfrou-Heart',
+        2: 'Furfrou-Star',
+        3: 'Furfrou-Diamond',
+        4: 'Furfrou-Debutante',
+        5: 'Furfrou-Matron',
+        6: 'Furfrou-Dandy',
+        7: 'Furfrou-La-Reine',
+        8: 'Furfrou-Kabuki',
+        9: 'Furfrou-Pharaoh'
+      };
+      if (furfrouForms[form] !== undefined) return furfrouForms[form];
+    }
+    if (dexId === 718) { // Zygarde
+      if (form === 1) return 'Zygarde-10%';
+      if (form === 2) return 'Zygarde-Complete';
+      return 'Zygarde';
+    }
+    if (dexId === 670) { // Floette
+      const floetteForms: Record<number, string> = {
+        0: 'Floette',
+        1: 'Floette-Yellow',
+        2: 'Floette-Orange',
+        3: 'Floette-Blue',
+        4: 'Floette-White',
+        5: 'Floette-Eternal'
+      };
+      if (floetteForms[form] !== undefined) return floetteForms[form];
+    }
+    if (dexId === 671) { // Florges
+      const florgesForms: Record<number, string> = {
+        0: 'Florges',
+        1: 'Florges-Yellow',
+        2: 'Florges-Orange',
+        3: 'Florges-Blue',
+        4: 'Florges-White'
+      };
+      if (florgesForms[form] !== undefined) return florgesForms[form];
+    }
+    if (dexId === 710) { // Pumpkaboo
+      const pumpkabooForms: Record<number, string> = {
+        0: 'Pumpkaboo',
+        1: 'Pumpkaboo-Small',
+        2: 'Pumpkaboo-Large',
+        3: 'Pumpkaboo-Super'
+      };
+      if (pumpkabooForms[form] !== undefined) return pumpkabooForms[form];
+    }
+    if (dexId === 711) { // Gourgeist
+      const gourgeistForms: Record<number, string> = {
+        0: 'Gourgeist',
+        1: 'Gourgeist-Small',
+        2: 'Gourgeist-Large',
+        3: 'Gourgeist-Super'
+      };
+      if (gourgeistForms[form] !== undefined) return gourgeistForms[form];
+    }
+  }
+
+  // 2. Try various name keys against our alias map
+  const nameKeys = [
+    (order as any).displayNameEn,
+    (order as any).displayName,
+    order.species,
+    (order as any).pokemonName,
+    (order as any).nameEn,
+    (order as any).name,
+    (order as any).speciesName
+  ];
+
+  for (const nameKey of nameKeys) {
+    if (nameKey) {
+      const key = String(nameKey).trim().toLowerCase();
+      if (aliases[key]) return aliases[key];
+    }
+  }
+
+  // 3. Fallback to formatSpeciesName()
+  const raw = String(order.species || '').trim();
+  return formatSpeciesName(raw);
+}
+
+// ─── Valid natures ────────────────────────────────────────────────────────────
+const NATURES = [
+  'Hardy','Lonely','Brave','Adamant','Naughty',
+  'Bold','Docile','Relaxed','Impish','Lax',
+  'Timid','Hasty','Serious','Jolly','Naive',
+  'Modest','Mild','Quiet','Bashful','Rash',
+  'Calm','Gentle','Sassy','Careful','Quirky',
+];
+
+/**
+ * If nature is empty or "Random", picks a valid random nature.
+ * This prevents sending "Random Nature" to SysBot which causes parse errors.
+ */
+function normalizeNature(nature: string | undefined): string {
+  if (!nature || String(nature).toLowerCase() === 'random') {
+    return NATURES[Math.floor(Math.random() * NATURES.length)];
+  }
+  return nature;
+}
+
+/**
+ * If gender is empty or "Random", returns null so no Gender line is sent.
+ * Auto-Legality / PKHeX will pick a legal gender for the species automatically.
+ */
+function normalizeGender(gender: string | undefined): string | null {
+  if (!gender || String(gender).toLowerCase() === 'random') return null;
+  if (gender === 'Male' || gender === 'Macho' || gender === 'M') return 'Male';
+  if (gender === 'Female' || gender === 'Hembra' || gender === 'F') return 'Female';
+  return null;
+}
+
+/**
+ * Alpha: Only included in the Showdown set when:
+ *   1. The game is Legends: Z-A
+ *   2. The encounter itself is marked as Alpha (payload.alpha = Boolean(selectedEncounter.isAlpha))
+ * Never sent for Scarlet/Violet.
+ */
+function shouldIncludeAlpha(pokemon: PokemonBuildPayload, isLegendsZA: boolean): boolean {
+  if (!isLegendsZA) return false;
+  // pokemon.alpha is set from Boolean(selectedEncounter.isAlpha) in the frontend payload,
+  // so it already correctly encodes "this encounter is an alpha encounter"
+  return Boolean(pokemon.alpha);
+}
+
+// ─── Ball name mappings (Showdown → ALM-accepted names) ───────────────────────
 const BALL_NAME_MAP: Record<string, string> = {
   'poke ball':     'Poké Ball',
   'pokeball':      'Poké Ball',
@@ -65,105 +236,86 @@ function normalizeBallName(ball: string): string {
 
 export function buildShowdownText(pokemon: PokemonBuildPayload, gameVersion?: string): string {
   const lines: string[] = []
-  const isLegendsZA = gameVersion === LEGENDS_ZA_GAME
+  const isLegendsZA = gameVersion === LEGENDS_ZA_GAME || gameVersion === ZA_GAME_ID
 
-  // ── Header: Species @ HeldItem ───────────────────────────────────────
+  // ── Header: Species @ HeldItem ───────────────────────────────────────────────
+  const showdownSpecies = getShowdownSpeciesName(pokemon);
   const hasHeldItem = pokemon.heldItem &&
     pokemon.heldItem.trim() !== '' &&
-    pokemon.heldItem.toLowerCase() !== 'none'
+    pokemon.heldItem.toLowerCase() !== 'none' &&
+    pokemon.heldItem.toLowerCase() !== 'sin objeto'
   const speciesLine = hasHeldItem
-    ? `${formatSpeciesName(pokemon.species)} @ ${capitalize(pokemon.heldItem!)}`
-    : formatSpeciesName(pokemon.species)
+    ? `${showdownSpecies} @ ${capitalize(pokemon.heldItem!)}`
+    : showdownSpecies
   lines.push(speciesLine)
 
-  // ── Ability ──────────────────────────────────────────────────────────
-  if (pokemon.ability) {
+  // ── Ability ──────────────────────────────────────────────────────────────────
+  if (pokemon.ability && String(pokemon.ability).toLowerCase() !== 'random') {
     lines.push(`Ability: ${capitalize(pokemon.ability)}`)
   }
 
-  // ── Level ────────────────────────────────────────────────────────────
+  // ── Level ────────────────────────────────────────────────────────────────────
   lines.push(`Level: ${pokemon.level}`)
 
-  // ── Shiny ────────────────────────────────────────────────────────────
+  // ── Shiny ────────────────────────────────────────────────────────────────────
   if (pokemon.shiny) {
     lines.push('Shiny: Yes')
   }
 
-  // ── Alpha (Legends ZA only) ───────────────────────────────────────────
-  if (pokemon.alpha && isLegendsZA) {
+  // ── Alpha (Legends ZA ONLY, and only if encounter is alpha) ──────────────────
+  if (shouldIncludeAlpha(pokemon, isLegendsZA)) {
     lines.push('Alpha: Yes')
   }
 
-  // ── Gender ───────────────────────────────────────────────────────────
-  if (pokemon.gender === 'M') lines.push('Gender: Male')
-  else if (pokemon.gender === 'F') lines.push('Gender: Female')
+  // ── Gender (skip if Random — let ALM choose) ──────────────────────────────────
+  const gender = normalizeGender(pokemon.gender)
+  if (gender) lines.push(`Gender: ${gender}`)
 
-  // ── Language ─────────────────────────────────────────────────────────
-  // Event Pokémon (Genesect, Groudon HOME, etc.) carry their own language from
-  // the event data payload. For regular Pokémon we default to Spanish.
-  // IMPORTANT: Strict event species (shiny) MUST NOT get a generic language since
-  // ALM uses Language + OT + TID together to identify the event record.
-  const eventLanguage = (pokemon as any).eventLanguage   // set by OrderWorker from event data
+  // ── Language ─────────────────────────────────────────────────────────────────
+  const eventLanguage = (pokemon as any).eventLanguage
   const language = eventLanguage ?? ((pokemon as any).language ?? 'Spanish')
   const strictEventSpecies = [
     'genesect', 'hoopa', 'volcanion', 'diancie', 'zarude', 'zeraora',
     'marshadow', 'meloetta', 'victini', 'groudon', 'kyogre', 'rayquaza',
   ]
-  const isStrictEvent = strictEventSpecies.includes(pokemon.species.toLowerCase())
-  // For strict events: only include Language if we have event-specific language data
+  const isStrictEvent = strictEventSpecies.includes(String(pokemon.species).toLowerCase())
   if (!isStrictEvent || eventLanguage) {
     lines.push(`Language: ${language}`)
   }
 
-  // ── Event OT / TID (for Cherish Ball event Pokémon) ──────────────────
-  // These fields are CRITICAL for ALM to accept shiny event Pokémon.
-  // Without them ALM sets ShinyType.Always which fails event legality checks.
-  // Error: "Requested shiny value (ShinyType.Always) is not possible for the given set"
+  // ── Event OT / TID (for Cherish Ball event Pokémon) ──────────────────────────
   const eventOT  = (pokemon as any).eventOT
   const eventTID = (pokemon as any).eventTID
   if (eventOT)  lines.push(`OT: ${eventOT}`)
   if (eventTID) lines.push(`TID: ${eventTID}`)
 
-
-  // ── Tera Type (not applicable for Legends ZA) ────────────────────────
+  // ── Tera Type (not applicable for Legends ZA) ────────────────────────────────
   if (pokemon.teraType && !isLegendsZA) {
     lines.push(`Tera Type: ${capitalize(pokemon.teraType)}`)
   }
 
-  // ── Ball ─────────────────────────────────────────────────────────────
-  // ALM supports "Ball: <name>" to set which Poké Ball is used.
-  // For Legends ZA we SKIP this field entirely:
-  //   - The special char 'é' in "Poké Ball" can cause encoding issues on Windows SysBot
-  //   - ALM auto-selects the most legal ball for ZA encounters
-  // For Scarlet/Violet we include the ball normally.
+  // ── Ball ─────────────────────────────────────────────────────────────────────
   if (!isLegendsZA && pokemon.pokeball) {
     lines.push(`Ball: ${normalizeBallName(pokemon.pokeball)}`)
   }
 
-  // ── EVs ───────────────────────────────────────────────────────────────────
-  // For Legends ZA: SKIP EVs entirely. ZA uses Effort Levels (EL), not EVs.
-  // Sending standard EV lines (e.g. "252 Atk / 252 Spe") causes ALM to crash
-  // with "Index was outside the bounds of the array". ALM auto-assigns ELs.
-  // For Scarlet/Violet: include EVs normally.
-  if (!isLegendsZA) {
+  // ── EVs ───────────────────────────────────────────────────────────────────────
+  if (!isLegendsZA && pokemon.evs) {
     const evParts = buildStatLine(pokemon.evs)
     if (evParts) lines.push(`EVs: ${evParts}`)
   }
 
-  // ── Nature ───────────────────────────────────────────────────────────
-  if (pokemon.nature) {
-    lines.push(`${capitalize(pokemon.nature)} Nature`)
+  // ── Nature (always normalized — never "Random Nature") ────────────────────────
+  lines.push(`${normalizeNature(pokemon.nature)} Nature`)
+
+  // ── IVs (only show non-31 values) ────────────────────────────────────────────
+  if (pokemon.ivs) {
+    const ivParts = buildStatLine(pokemon.ivs, 31)
+    if (ivParts) lines.push(`IVs: ${ivParts}`)
   }
 
-  // ── IVs (only show non-31 values) ──────────────────────────────────
-  const ivParts = buildStatLine(pokemon.ivs, 31)
-  if (ivParts) lines.push(`IVs: ${ivParts}`)
-
-  // ── Moves ────────────────────────────────────────────────────────────
-  // For Legends ZA: DO NOT send moves. ALM auto-assigns the legal learnset for ZA.
-  // Moves from PokeAPI reflect the SV learnset — many don't exist in ZA and ALM rejects them.
-  // For Scarlet/Violet: send moves as provided by the user.
-  if (!isLegendsZA) {
+  // ── Moves ────────────────────────────────────────────────────────────────────
+  if (!isLegendsZA && Array.isArray(pokemon.moves)) {
     const validMoves = pokemon.moves.filter(Boolean)
     for (const move of validMoves) {
       lines.push(`- ${capitalize(move)}`)
@@ -173,63 +325,40 @@ export function buildShowdownText(pokemon: PokemonBuildPayload, gameVersion?: st
   return lines.join('\n')
 }
 
-
-/**
- * Converts an entire team payload to a combined Showdown string (multi-set).
- */
 export function teamToShowdownText(team: PokemonBuildPayload[], gameVersion?: string): string {
   return team.map((p) => buildShowdownText(p, gameVersion)).join('\n\n')
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function capitalize(str: string): string {
   if (!str) return str
-  // Convert "light-ball" → "Light Ball", "volt-tackle" → "Volt Tackle"
   return str
     .split('-')
     .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
     .join(' ')
 }
 
-/**
- * Formats a Pokémon species slug for the Showdown text format.
- * Regional forms must use a hyphen before their suffix, NOT a space:
- *   meowth-galar   → Meowth-Galar   ✅  (SysBot parses correctly)
- *   meowth-galar   → Meowth Galar   ❌  (SysBot: "Species could not be identified")
- * All other hyphens (e.g. multi-word names) become spaces as usual.
- */
 const REGIONAL_SUFFIXES = ['-galar', '-alola', '-hisui', '-paldea']
 
-/**
- * Hard overrides for species with special characters in their Showdown name.
- * Keys are PokeAPI slugs (lowercase, hyphenated).
- */
 const SPECIES_NAME_OVERRIDES: Record<string, string> = {
-  // Mr. Mime family
   'mr-mime':         'Mr. Mime',
   'mr-mime-galar':   'Mr. Mime-Galar',
   'mr-rime':         'Mr. Rime',
   'mime-jr':         'Mime Jr.',
-  // Farfetch'd family  
   'farfetchd':       "Farfetch'd",
   'farfetchd-galar': "Farfetch'd-Galar",
   'sirfetchd':       "Sirfetch'd",
-  // Nidoran
   'nidoran-f':       'Nidoran-F',
   'nidoran-m':       'Nidoran-M',
-  // Hyphen that is NOT a regional suffix (must stay as hyphen)
   'ho-oh':           'Ho-Oh',
   'porygon-z':       'Porygon-Z',
   'jangmo-o':        'Jangmo-o',
   'hakamo-o':        'Hakamo-o',
   'kommo-o':         'Kommo-o',
-  // Type: Null
   'type-null':       'Type: Null',
-  // Flabébé
   'flabebe':         'Flabébé',
-  // Zygarde forms (Frontend sends the PokeAPI slug which is 'zygarde-10', no % sign)
-  'zygarde-10':      'Zygarde-10%',    // PokeAPI slug → Showdown name
+  'zygarde-10':      'Zygarde-10%',
   'zygarde-10%':     'Zygarde-10%',
   'zygarde-10%-c':   'Zygarde-10%',
   'zygarde-50':      'Zygarde',
@@ -240,20 +369,15 @@ const SPECIES_NAME_OVERRIDES: Record<string, string> = {
 
 function formatSpeciesName(slug: string): string {
   if (!slug) return slug
-  // Normalize string for lookup: remove typographic apostrophes, lowercase
-  const lower = slug.toLowerCase().replace('’', "'")
+  const lower = slug.toLowerCase().replace('\u2019', "'")
 
-  // 1. Hard override takes absolute priority (Mr. Mime, Farfetch'd, Ho-Oh, etc.)
   if (SPECIES_NAME_OVERRIDES[lower]) {
     return SPECIES_NAME_OVERRIDES[lower]
   }
 
-  // Handle specific case for zygarde that might have uppercase 'C' in slug
   if (lower === 'zygarde-10%-c' || lower === 'zygarde-10-c') return 'Zygarde-10%'
   if (lower === 'zygarde-50%-c' || lower === 'zygarde-50-c' || lower === 'zygarde-50') return 'Zygarde'
 
-
-  // 2. Regional suffix: preserve hyphen before suffix (-galar, -alola, -hisui, -paldea)
   for (const suffix of REGIONAL_SUFFIXES) {
     if (lower.endsWith(suffix)) {
       const basePart = slug.slice(0, slug.length - suffix.length)
@@ -261,16 +385,13 @@ function formatSpeciesName(slug: string): string {
         .split('-')
         .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
         .join(' ')
-      // Capitalize suffix: "-galar" → "-Galar"
       const formattedSuffix = suffix.charAt(1).toUpperCase() + suffix.slice(2)
       return `${formattedBase}-${formattedSuffix}`
     }
   }
 
-  // 3. Standard capitalize (hyphens become spaces)
   return capitalize(slug)
 }
-
 
 interface Stats {
   hp: number
@@ -281,10 +402,6 @@ interface Stats {
   speed: number
 }
 
-/**
- * Builds a Showdown stat line string.
- * @param exclude - Only include stats that DON'T equal this value (for IVs, exclude 31)
- */
 function buildStatLine(stats: Stats, exclude?: number): string {
   const mapping: [string, number][] = [
     ['HP', stats.hp],

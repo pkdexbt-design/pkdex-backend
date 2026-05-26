@@ -174,7 +174,7 @@ export async function validatePokemonFull(pokemon: PokemonData): Promise<Validat
 
     // 2. Normalize and check if Pokémon is in the game database
     const searchName = pokemon.species.toLowerCase().trim().replace(/\s+/g, '-');
-    const match = games[gameId].pokemon.find(p => 
+    const match = games[gameId].pokemon.find((p: any) => 
       p.name.toLowerCase() === searchName || 
       p.displayName.toLowerCase().trim().replace(/\s+/g, '-') === searchName ||
       p.displayName.toLowerCase().trim() === pokemon.species.toLowerCase().trim()
@@ -215,7 +215,7 @@ export async function validatePokemonFull(pokemon: PokemonData): Promise<Validat
     });
 
     if (!validationResult.valid) {
-      validationResult.errors.forEach(err => {
+      validationResult.errors.forEach((err: any) => {
         errors.push({
           field: 'encounter',
           message: err

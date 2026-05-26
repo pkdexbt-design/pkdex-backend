@@ -27,6 +27,8 @@ export interface PokemonBuildPayload {
   moves: string[]   // Move names (filtered nulls)
   ivs: StatValues
   evs: StatValues
+  encounterId?: string
+  homeProfileId?: string
 }
 
 export interface CreateOrderRequest {
