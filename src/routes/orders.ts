@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express'
 import { getSupabase } from '../lib/supabase'
 import { addOrderToQueue } from '../queue/OrderQueue'
+import { validate } from '../lib/gameDb'
 import { CreateOrderRequest, CreateOrderResponse } from '../lib/order-types'
 import { AuthRequest } from '../middleware/auth'
 
@@ -85,13 +86,23 @@ router.post('/', async (req: AuthRequest, res: Response) => {
       return res.status(401).json({ error: 'User not authenticated' })
     }
 
+    // Validate and correct levels (e.g. min evolution levels for SV starters)
+    const gKey = gameVersion === 'legends-za' ? 'za' : 'sv';
+    const validatedTeam = team.map((pokemon: any) => {
+      const result = validate(gKey, pokemon);
+      if (result.legal && result.order) {
+        return result.order;
+      }
+      return pokemon;
+    });
+
     // ─── Insert in Supabase ───────────────────────────────
     const { data, error } = await getSupabase()
       .from('orders')
       .insert({
         user_id: req.user.id,
         trade_code: tradeCode,
-        team_payload: team,
+        team_payload: validatedTeam,
         game_version: gameVersion,
         status: 'pending',
       })
@@ -112,7 +123,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
 
     // ====== ENQUEUE THE ORDER (PSAS-13) ======
     try {
-      await addOrderToQueue(data.id, gameVersion, team, tradeCode, userPlan)
+      await addOrderToQueue(data.id, gameVersion, validatedTeam, tradeCode, userPlan)
     } catch (queueErr) {
       console.error('[Orders] Failed to push order to Redis queue:', queueErr)
     }
