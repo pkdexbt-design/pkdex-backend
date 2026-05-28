@@ -25,6 +25,28 @@ export const games: Record<string, any> = {
   },
 };
 
+// --- SV HOME EXPANSION PATCH START ---
+const SV_HOME_EXPANSION_POKEMON = JSON.parse(readFileSync(join(dataDir, 'sv_home_expansion_pokemon.json'), 'utf8'));
+const SV_HOME_EXPANSION_FILE_MAP = JSON.parse(readFileSync(join(dataDir, 'sv_home_expansion_file_map.json'), 'utf8'));
+const SV_HOME_EXPANSION_SPECIES = new Set(Object.values(SV_HOME_EXPANSION_FILE_MAP).map((x: any) => Number(x.species)));
+
+function mergePokemonWithoutDuplicates(baseList: any[], extraList: any[]) {
+  const seen = new Set(baseList.map(p => `${Number(p.species)}-${Number(p.form || 0)}`));
+  const out = [...baseList];
+  for (const p of extraList) {
+    const key = `${Number(p.species)}-${Number(p.form || 0)}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(p);
+  }
+  return out.sort((a: any, b: any) => Number(a.species) - Number(b.species) || Number(a.form || 0) - Number(b.form || 0));
+}
+
+games.sv.pokemon = mergePokemonWithoutDuplicates(games.sv.pokemon, SV_HOME_EXPANSION_POKEMON);
+if (games.sv.summary) games.sv.summary.pokemonCount = games.sv.pokemon.length;
+if (games.sv.meta?.summary) games.sv.meta.summary.pokemonCount = games.sv.pokemon.length;
+// --- SV HOME EXPANSION PATCH END ---
+
 export const combinedMeta = JSON.parse(readFileSync(join(dataDir, 'meta.json'), 'utf8'));
 
 export const itemLists: Record<string, string[]> = {
@@ -701,6 +723,10 @@ export function canUseHomeTransfer(gameId: string, species: number, hasNoNativeE
   const g = games[gameId];
   const sp = Number(species);
   if (!g || !Number.isFinite(sp) || sp <= 0) return false;
+
+  // Patch SV HOME Expansion: estas especies se activan solo por HOME/archivo fijo.
+  if (gameId === 'sv' && SV_HOME_EXPANSION_SPECIES.has(sp)) return true;
+
   const existsInGame = g.pokemon.some((p: any) => Number(p.species) === sp);
   if (!existsInGame) return false;
   
@@ -770,9 +796,53 @@ export function canBeShinyViaHome(species: number, gameId?: string): boolean {
 
 export function makeHomeTransferEncounters(gameId: string, species: number, form = 0) {
   const sp = Number(species);
+  const fm = Number(form || 0);
   const shinyAllowed = canBeShinyViaHome(sp, gameId);
   const isSV = gameId === 'sv';
   const base = [];
+
+  // --- SV HOME EXPANSION PATCH START ---
+  // Para estas especies nuevas, el encuentro HOME no genera un set Showdown.
+  // Genera una opcion fija y despues createSingleOrder adjunta el archivo correspondiente.
+  const expansionKey = `${sp}-${fm}`;
+  const expansion = gameId === 'sv' ? SV_HOME_EXPANSION_FILE_MAP[expansionKey] : null;
+  if (expansion) {
+    const isShinyFile = expansion.mode === 'shiny';
+    base.push({
+      id: `sv-home-expansion-file-${expansionKey}`,
+      game: 'SV',
+      version: 'Scarlet/Violet',
+      source: 'SV HOME expansion fixed file',
+      method: expansion.method,
+      originType: 'home-fixed-file-transfer',
+      requiresLegalOrigin: true,
+      usesFixedFile: true,
+      fixedFileName: expansion.fileName,
+      species: sp,
+      form: fm,
+      levelMin: isShinyFile ? 50 : 1,
+      levelMax: 100,
+      location: `sv-home-expansion-${expansionKey}`,
+      locationName: expansion.method,
+      locationNameEn: expansion.method,
+      gender: 'Random',
+      shiny: isShinyFile ? 'Always' : 'Never',
+      shinyLocked: !isShinyFile,
+      forceShiny: isShinyFile,
+      canBeShinyViaHome: isShinyFile,
+      fixedBall: null,
+      allowedBalls: 'FixedByFile',
+      availableScarlet: true,
+      availableViolet: true,
+      teraType: 'FixedByFile',
+      nature: 'FixedByFile',
+      heldItem: null,
+      note: `Este Pokemon se entrega por archivo fijo HOME. La web debe enviar solo %trade CODIGO y adjuntar: ${expansion.fileName}. ${expansion.originNote || ''}`
+    });
+    return base;
+  }
+  // --- SV HOME EXPANSION PATCH END ---
+
   for (const profile of HOME_SPECIFIC_PROFILES) {
     if (Number(profile.species) !== sp) continue;
     if (profile.games && !profile.games.includes(gameId)) continue;

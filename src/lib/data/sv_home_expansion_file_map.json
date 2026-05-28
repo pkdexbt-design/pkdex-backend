@@ -1,0 +1,308 @@
+{
+  "377-0": {
+    "species": 377,
+    "form": 0,
+    "name": "Regirock",
+    "mode": "shiny",
+    "fileName": "regirock.pk8",
+    "originNote": "Crown Tundra / SWSH static encounter shiny",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "378-0": {
+    "species": 378,
+    "form": 0,
+    "name": "Regice",
+    "mode": "shiny",
+    "fileName": "regice.pk8",
+    "originNote": "Crown Tundra / SWSH static encounter shiny",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "379-0": {
+    "species": 379,
+    "form": 0,
+    "name": "Registeel",
+    "mode": "shiny",
+    "fileName": "registeel.pk8",
+    "originNote": "Crown Tundra / SWSH static encounter shiny",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "480-0": {
+    "species": 480,
+    "form": 0,
+    "name": "Uxie",
+    "mode": "shiny",
+    "fileName": "uxie.pk8",
+    "originNote": "HOME legal transfer shiny",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "481-0": {
+    "species": 481,
+    "form": 0,
+    "name": "Mesprit",
+    "mode": "shiny",
+    "fileName": "mesprit.pk8",
+    "originNote": "HOME legal transfer shiny",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "482-0": {
+    "species": 482,
+    "form": 0,
+    "name": "Azelf",
+    "mode": "shiny",
+    "fileName": "azelf.pk8",
+    "originNote": "HOME legal transfer shiny",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "485-0": {
+    "species": 485,
+    "form": 0,
+    "name": "Heatran",
+    "mode": "shiny",
+    "fileName": "heatran.pk9",
+    "originNote": "HOME legal transfer shiny",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "486-0": {
+    "species": 486,
+    "form": 0,
+    "name": "Regigigas",
+    "mode": "shiny",
+    "fileName": "regigigas.pk8",
+    "originNote": "Legends Arceus static encounter shiny",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "487-0": {
+    "species": 487,
+    "form": 0,
+    "name": "Giratina",
+    "mode": "shiny",
+    "fileName": "giratina.pk5",
+    "originNote": "HOME legal transfer shiny",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "488-0": {
+    "species": 488,
+    "form": 0,
+    "name": "Cresselia",
+    "mode": "shiny",
+    "fileName": "cresselia.pk9",
+    "originNote": "HOME legal transfer shiny",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "641-0": {
+    "species": 641,
+    "form": 0,
+    "name": "Tornadus",
+    "mode": "shiny",
+    "fileName": "tornadus.pk9",
+    "originNote": "HOME legal transfer shiny",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "642-1": {
+    "species": 642,
+    "form": 1,
+    "name": "Thundurus",
+    "mode": "shiny",
+    "fileName": "thundurus.pk9",
+    "originNote": "HOME legal transfer shiny",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "645-1": {
+    "species": 645,
+    "form": 1,
+    "name": "Landorus",
+    "mode": "shiny",
+    "fileName": "landorus.pk9",
+    "originNote": "HOME legal transfer shiny",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "888-0": {
+    "species": 888,
+    "form": 0,
+    "name": "Zacian",
+    "mode": "shiny",
+    "fileName": "zacian.pk8",
+    "originNote": "Official shiny event",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "889-0": {
+    "species": 889,
+    "form": 0,
+    "name": "Zamazenta",
+    "mode": "shiny",
+    "fileName": "zamazenta.pk8",
+    "originNote": "Official shiny event",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "890-0": {
+    "species": 890,
+    "form": 0,
+    "name": "Eternatus",
+    "mode": "shiny",
+    "fileName": "eternatus.pk8",
+    "originNote": "Official shiny event",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "894-0": {
+    "species": 894,
+    "form": 0,
+    "name": "Regieleki",
+    "mode": "shiny",
+    "fileName": "regieleki.pk8",
+    "originNote": "Crown Tundra / SWSH static encounter shiny",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "895-0": {
+    "species": 895,
+    "form": 0,
+    "name": "Regidrago",
+    "mode": "shiny",
+    "fileName": "regidrago.pk8",
+    "originNote": "Crown Tundra / SWSH static encounter shiny",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "905-1": {
+    "species": 905,
+    "form": 1,
+    "name": "Enamorus",
+    "mode": "shiny",
+    "fileName": "enamorus.pk9",
+    "originNote": "Pokemon HOME shiny reward",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "151-0": {
+    "species": 151,
+    "form": 0,
+    "name": "Mew",
+    "mode": "shiny",
+    "fileName": "mew.pk3",
+    "originNote": "Legal shiny event / HOME transfer",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "385-0": {
+    "species": 385,
+    "form": 0,
+    "name": "Jirachi",
+    "mode": "shiny",
+    "fileName": "jirachi.pk8",
+    "originNote": "Legal shiny event / HOME transfer",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "386-1": {
+    "species": 386,
+    "form": 1,
+    "name": "Deoxys",
+    "mode": "shiny",
+    "fileName": "deoxys.pk7",
+    "originNote": "Legal shiny event / HOME transfer",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "489-0": {
+    "species": 489,
+    "form": 0,
+    "name": "Phione",
+    "mode": "shiny",
+    "fileName": "phione.pk9",
+    "originNote": "Legal shiny bred / HOME transfer",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "490-0": {
+    "species": 490,
+    "form": 0,
+    "name": "Manaphy",
+    "mode": "shiny",
+    "fileName": "manaphy.pb8",
+    "originNote": "Legal shiny HOME/BDSP compatible file",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "491-0": {
+    "species": 491,
+    "form": 0,
+    "name": "Darkrai",
+    "mode": "shiny",
+    "fileName": "darkrai.pk4",
+    "originNote": "Legal shiny event / HOME transfer",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "492-0": {
+    "species": 492,
+    "form": 0,
+    "name": "Shaymin",
+    "mode": "shiny",
+    "fileName": "shaymin.pk7",
+    "originNote": "Oak Letter shiny file",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "493-0": {
+    "species": 493,
+    "form": 0,
+    "name": "Arceus",
+    "mode": "shiny",
+    "fileName": "arceus.pk6",
+    "originNote": "Legal shiny event / HOME transfer",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "647-0": {
+    "species": 647,
+    "form": 0,
+    "name": "Keldeo",
+    "mode": "shiny",
+    "fileName": "keldeo.pk8",
+    "originNote": "Pokemon HOME shiny reward / legal transfer",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "648-0": {
+    "species": 648,
+    "form": 0,
+    "name": "Meloetta",
+    "mode": "shiny",
+    "fileName": "meloetta.pk9",
+    "originNote": "Pokemon HOME shiny reward",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "719-0": {
+    "species": 719,
+    "form": 0,
+    "name": "Diancie",
+    "mode": "shiny",
+    "fileName": "diancie.pk6",
+    "originNote": "Official shiny event",
+    "method": "Intercambio Shiny Evento HOME"
+  },
+  "720-0": {
+    "species": 720,
+    "form": 0,
+    "name": "Hoopa",
+    "mode": "normal",
+    "fileName": "hoopa.pk6",
+    "originNote": "Official event - shiny locked",
+    "method": "Intercambio Evento HOME"
+  },
+  "801-1": {
+    "species": 801,
+    "form": 1,
+    "name": "Magearna",
+    "mode": "normal",
+    "fileName": "magearna_original_color.pk9",
+    "originNote": "Original Color Magearna HOME reward - not shiny",
+    "method": "Intercambio Evento HOME"
+  },
+  "893-0": {
+    "species": 893,
+    "form": 0,
+    "name": "Zarude",
+    "mode": "normal",
+    "fileName": "zarude.pk8",
+    "originNote": "Official event - shiny locked",
+    "method": "Intercambio Evento HOME"
+  },
+  "721-0": {
+    "species": 721,
+    "form": 0,
+    "name": "Volcanion",
+    "mode": "normal",
+    "fileName": "volcanion.pk9",
+    "originNote": "Official event - shiny locked",
+    "method": "Intercambio Evento HOME"
+  }
+}

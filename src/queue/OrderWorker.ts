@@ -50,6 +50,25 @@ const SV_HOME_SHINY_FILES: Record<number, string> = {
   800: '0800 ★ - Necrozma - 091B3E0E66BA.pk7',
 };
 
+// --- SV HOME EXPANSION PATCH START ---
+const dataDir = join(process.cwd(), 'src', 'lib', 'data');
+let SV_HOME_EXPANSION_FILE_MAP_PATH = join(dataDir, 'sv_home_expansion_file_map.json');
+if (!existsSync(SV_HOME_EXPANSION_FILE_MAP_PATH)) {
+  SV_HOME_EXPANSION_FILE_MAP_PATH = join(__dirname, '..', 'lib', 'data', 'sv_home_expansion_file_map.json');
+}
+if (!existsSync(SV_HOME_EXPANSION_FILE_MAP_PATH)) {
+  SV_HOME_EXPANSION_FILE_MAP_PATH = join(__dirname, '..', '..', 'src', 'lib', 'data', 'sv_home_expansion_file_map.json');
+}
+let SV_HOME_EXPANSION_FILE_MAP: Record<string, any> = {};
+if (existsSync(SV_HOME_EXPANSION_FILE_MAP_PATH)) {
+  try {
+    SV_HOME_EXPANSION_FILE_MAP = JSON.parse(readFileSync(SV_HOME_EXPANSION_FILE_MAP_PATH, 'utf8'));
+  } catch (err: any) {
+    console.error('[OrderWorker] Error loading sv_home_expansion_file_map.json:', err.message);
+  }
+}
+// --- SV HOME EXPANSION PATCH END ---
+
 /**
  * Worker that processes incoming web orders.
  * It continually runs in the background.
@@ -129,8 +148,32 @@ export const orderWorker = new Worker(
 
           // ── Attachments and Custom Command Formatting ────────────────────────
           const isHome = enrichedPokemon.homeProfileId || enrichedPokemon.encounterId?.startsWith('home-') || enrichedPokemon.origin?.toLowerCase().includes('home');
-          
-          if ((gameVersion === 'scarlet' || gameVersion === 'violet') && pokemon.shiny && isHome && dexId && SV_HOME_SHINY_FILES[dexId]) {
+          const expansionKey = `${dexId}-${form}`;
+          const expansion = (gameVersion === 'scarlet' || gameVersion === 'violet') ? SV_HOME_EXPANSION_FILE_MAP[expansionKey] : null;
+
+          if (expansion) {
+            const filename = expansion.fileName;
+            let pkPath = join(process.cwd(), 'sv_home_expansion_files', filename);
+            if (!existsSync(pkPath)) {
+              pkPath = join(process.cwd(), 'src', 'lib', 'data', 'sv_home_expansion_files', filename);
+            }
+            if (!existsSync(pkPath)) {
+              pkPath = join(__dirname, '..', '..', 'sv_home_expansion_files', filename);
+            }
+            if (!existsSync(pkPath)) {
+              pkPath = join(__dirname, '..', 'lib', 'data', 'sv_home_expansion_files', filename);
+            }
+            if (!existsSync(pkPath)) {
+              pkPath = join(__dirname, '..', '..', 'src', 'lib', 'data', 'sv_home_expansion_files', filename);
+            }
+            if (existsSync(pkPath)) {
+              attachment = { buffer: readFileSync(pkPath), filename };
+              console.log(`[OrderWorker] ✅ Loaded expansion fixed .pk/.pb8 file: ${filename} for species ${expansionKey}`);
+              showdownText = ''; // Clear showdownText so only trade code is sent
+            } else {
+              console.warn(`[OrderWorker] ⚠️ Expansion fixed file not found for species ${expansionKey} (${filename})`);
+            }
+          } else if ((gameVersion === 'scarlet' || gameVersion === 'violet') && pokemon.shiny && isHome && dexId && SV_HOME_SHINY_FILES[dexId]) {
             // SV HOME Shiny Attachments
             const filename = SV_HOME_SHINY_FILES[dexId];
             let pkPath = join(process.cwd(), 'pk9', filename);
@@ -171,7 +214,7 @@ export const orderWorker = new Worker(
             }
           }
 
-          if (!showdownText) {
+          if (!showdownText && !attachment) {
             showdownText = buildShowdownText(pokemon, gameVersion);
           }
 
