@@ -4,12 +4,12 @@ const options: swaggerJsdoc.Options = {
   definition: {
     openapi: '3.0.0',
     info: {
-      title: 'Pokémon SysBot Automation API',
+      title: 'Pokémon Automation API',
       version: '1.0.0',
-      description: 'API backend para el sistema de automatización de SysBot de Pokémon. Proporciona validación de datos de Pokémon y endpoints para la gestión de inyecciones.',
+      description: 'API backend para el sistema de automatización de intercambio de Pokémon. Proporciona validación de datos de Pokémon y endpoints para la gestión de inyecciones.',
       contact: {
         name: 'API Support',
-        email: 'support@pokemon-sysbot.com',
+        email: 'support@pokemon-automation.com',
       },
     },
     servers: [

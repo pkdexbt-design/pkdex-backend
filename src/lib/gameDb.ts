@@ -47,6 +47,78 @@ if (games.sv.summary) games.sv.summary.pokemonCount = games.sv.pokemon.length;
 if (games.sv.meta?.summary) games.sv.meta.summary.pokemonCount = games.sv.pokemon.length;
 // --- SV HOME EXPANSION PATCH END ---
 
+// --- FRIENDLY FORM NAMES PATCH START ---
+const FRIENDLY_FORM_NAMES: Record<string, { label: string; nameEs: string; nameEn: string; aliases: string[] }> = {
+  '74-1': { label: 'Alola', nameEs: 'Geodude de Alola', nameEn: 'Alolan Geodude', aliases: ['alola', 'alolan', 'forma 1', 'form 1'] },
+  '75-1': { label: 'Alola', nameEs: 'Graveler de Alola', nameEn: 'Alolan Graveler', aliases: ['alola', 'alolan', 'forma 1', 'form 1'] },
+  '76-1': { label: 'Alola', nameEs: 'Golem de Alola', nameEn: 'Alolan Golem', aliases: ['alola', 'alolan', 'forma 1', 'form 1'] },
+  '157-1': { label: 'Hisui', nameEs: 'Typhlosion de Hisui', nameEn: 'Hisuian Typhlosion', aliases: ['hisui', 'hisuian', 'forma 1', 'form 1'] },
+  '194-1': { label: 'Paldea', nameEs: 'Wooper de Paldea', nameEn: 'Paldean Wooper', aliases: ['paldea', 'paldean', 'forma 1', 'form 1'] },
+  '422-1': { label: 'Mar Este', nameEs: 'Shellos Mar Este', nameEn: 'Shellos East Sea', aliases: ['este', 'east', 'mar este', 'east sea', 'forma 1', 'form 1'] },
+  '423-1': { label: 'Mar Este', nameEs: 'Gastrodon Mar Este', nameEn: 'Gastrodon East Sea', aliases: ['este', 'east', 'mar este', 'east sea', 'forma 1', 'form 1'] },
+  '585-1': { label: 'Verano', nameEs: 'Deerling Verano', nameEn: 'Deerling Summer', aliases: ['verano', 'summer', 'forma 1', 'form 1'] },
+  '585-2': { label: 'Otoño', nameEs: 'Deerling Otoño', nameEn: 'Deerling Autumn', aliases: ['otoño', 'autumn', 'forma 2', 'form 2'] },
+  '585-3': { label: 'Invierno', nameEs: 'Deerling Invierno', nameEn: 'Deerling Winter', aliases: ['invierno', 'winter', 'forma 3', 'form 3'] },
+  '586-1': { label: 'Verano', nameEs: 'Sawsbuck Verano', nameEn: 'Sawsbuck Summer', aliases: ['verano', 'summer', 'forma 1', 'form 1'] },
+  '586-2': { label: 'Otoño', nameEs: 'Sawsbuck Otoño', nameEn: 'Sawsbuck Autumn', aliases: ['otoño', 'autumn', 'forma 2', 'form 2'] },
+  '586-3': { label: 'Invierno', nameEs: 'Sawsbuck Invierno', nameEn: 'Sawsbuck Winter', aliases: ['invierno', 'winter', 'forma 3', 'form 3'] },
+  '664-4': { label: 'Motivo Jardín', nameEs: 'Scatterbug Motivo Jardín', nameEn: 'Scatterbug Garden Pattern', aliases: ['jardin', 'jardín', 'garden', 'forma 4', 'form 4'] },
+  '664-6': { label: 'Motivo Fantasía', nameEs: 'Scatterbug Motivo Fantasía', nameEn: 'Scatterbug Fancy Pattern', aliases: ['fantasia', 'fantasía', 'fancy', 'forma 6', 'form 6'] },
+  '665-4': { label: 'Motivo Jardín', nameEs: 'Spewpa Motivo Jardín', nameEn: 'Spewpa Garden Pattern', aliases: ['jardin', 'jardín', 'garden', 'forma 4', 'form 4'] },
+  '665-6': { label: 'Motivo Fantasía', nameEs: 'Spewpa Motivo Fantasía', nameEn: 'Spewpa Fancy Pattern', aliases: ['fantasia', 'fantasía', 'fancy', 'forma 6', 'form 6'] },
+  '666-4': { label: 'Motivo Jardín', nameEs: 'Vivillon Motivo Jardín', nameEn: 'Vivillon Garden Pattern', aliases: ['jardin', 'jardín', 'garden', 'forma 4', 'form 4'] },
+  '666-6': { label: 'Motivo Fantasía', nameEs: 'Vivillon Motivo Fantasía', nameEn: 'Vivillon Fancy Pattern', aliases: ['fantasia', 'fantasía', 'fancy', 'forma 6', 'form 6'] },
+  '666-30': { label: 'Motivo Poké Ball', nameEs: 'Vivillon Motivo Poké Ball', nameEn: 'Vivillon Poké Ball Pattern', aliases: ['poke ball', 'pokeball', 'motivo', 'pattern', 'forma 30', 'form 30'] },
+  '678-1': { label: 'Hembra', nameEs: 'Meowstic Hembra', nameEn: 'Meowstic Female', aliases: ['hembra', 'female', 'forma 1', 'form 1'] },
+  '741-1': { label: 'Estilo Animado', nameEs: 'Oricorio Estilo Animado', nameEn: 'Oricorio Pom-Pom Style', aliases: ['animado', 'pompom', 'pom-pom', 'yellow', 'amarillo', 'forma 1', 'form 1'] },
+  '741-2': { label: 'Estilo Plácido', nameEs: 'Oricorio Estilo Plácido', nameEn: 'Oricorio Pa\'u Style', aliases: ['plácido', 'placido', 'pau', 'pa\'u', 'pink', 'rosa', 'forma 2', 'form 2'] },
+  '741-3': { label: 'Estilo Refinado', nameEs: 'Oricorio Estilo Refinado', nameEn: 'Oricorio Sensu Style', aliases: ['refinado', 'sensu', 'purple', 'morado', 'forma 3', 'form 3'] },
+  '744-1': { label: 'Ritmo Propio', nameEs: 'Rockruff Ritmo Propio', nameEn: 'Rockruff Own Tempo', aliases: ['ritmo propio', 'own tempo', 'tempo', 'forma 1', 'form 1'] },
+  '745-1': { label: 'Nocturno', nameEs: 'Lycanroc Nocturno', nameEn: 'Lycanroc Midnight', aliases: ['nocturno', 'midnight', 'forma 1', 'form 1'] },
+  '745-2': { label: 'Crepuscular', nameEs: 'Lycanroc Crepuscular', nameEn: 'Lycanroc Dusk', aliases: ['crepuscular', 'dusk', 'forma 2', 'form 2'] },
+  '774-7': { label: 'Núcleo Naranja', nameEs: 'Minior Núcleo Naranja', nameEn: 'Minior Orange Core', aliases: ['naranja', 'orange', 'forma 7', 'form 7'] },
+  '774-9': { label: 'Núcleo Amarillo', nameEs: 'Minior Núcleo Amarillo', nameEn: 'Minior Yellow Core', aliases: ['amarillo', 'yellow', 'forma 9', 'form 9'] },
+  '774-11': { label: 'Núcleo Verde', nameEs: 'Minior Núcleo Verde', nameEn: 'Minior Green Core', aliases: ['verde', 'green', 'forma 11', 'form 11'] },
+  '774-12': { label: 'Núcleo Azul', nameEs: 'Minior Núcleo Azul', nameEn: 'Minior Blue Core', aliases: ['azul', 'blue', 'forma 12', 'form 12'] },
+  '774-13': { label: 'Núcleo Añil', nameEs: 'Minior Núcleo Añil', nameEn: 'Minior Indigo Core', aliases: ['añil', 'anil', 'indigo', 'forma 13', 'form 13'] },
+  '774-31': { label: 'Núcleo Violeta', nameEs: 'Minior Núcleo Violeta', nameEn: 'Minior Violet Core', aliases: ['violeta', 'violet', 'forma 31', 'form 31'] },
+  '854-1': { label: 'Genuino', nameEs: 'Sinistea Genuino', nameEn: 'Sinistea Antique', aliases: ['genuino', 'antique', 'autentico', 'auténtico', 'forma 1', 'form 1'] },
+  '869-1': { label: 'Crema de Rubí', nameEs: 'Alcremie Crema de Rubí', nameEn: 'Alcremie Ruby Cream', aliases: ['rubi', 'rubí', 'ruby', 'crema', 'forma 1', 'form 1'] },
+  '869-2': { label: 'Crema de Matcha', nameEs: 'Alcremie Crema de Matcha', nameEn: 'Alcremie Matcha Cream', aliases: ['matcha', 'crema', 'forma 2', 'form 2'] },
+  '869-3': { label: 'Crema de Menta', nameEs: 'Alcremie Crema de Menta', nameEn: 'Alcremie Mint Cream', aliases: ['menta', 'mint', 'crema', 'forma 3', 'form 3'] },
+  '869-4': { label: 'Crema de Limón', nameEs: 'Alcremie Crema de Limón', nameEn: 'Alcremie Lemon Cream', aliases: ['limon', 'limón', 'lemon', 'crema', 'forma 4', 'form 4'] },
+  '869-5': { label: 'Crema Salada', nameEs: 'Alcremie Crema Salada', nameEn: 'Alcremie Salted Cream', aliases: ['salada', 'salted', 'crema', 'forma 5', 'form 5'] },
+  '869-6': { label: 'Crema de Rubí Mix', nameEs: 'Alcremie Crema de Rubí Mix', nameEn: 'Alcremie Ruby Mix', aliases: ['rubi mix', 'rubí mix', 'ruby mix', 'crema', 'forma 6', 'form 6'] },
+  '869-7': { label: 'Crema de Caramelo', nameEs: 'Alcremie Crema de Caramelo', nameEn: 'Alcremie Caramel Swirl', aliases: ['caramelo', 'caramel', 'crema', 'forma 7', 'form 7'] },
+  '869-8': { label: 'Crema Arcoíris', nameEs: 'Alcremie Crema Arcoíris', nameEn: 'Alcremie Rainbow Swirl', aliases: ['arcoiris', 'arcoíris', 'rainbow', 'crema', 'forma 8', 'form 8'] },
+  '892-1': { label: 'Estilo Fluido', nameEs: 'Urshifu Estilo Fluido', nameEn: 'Urshifu Rapid Strike', aliases: ['fluido', 'rapid strike', 'agua', 'water', 'forma 1', 'form 1'] },
+  '982-1': { label: 'Tres Segmentos', nameEs: 'Dudunsparce Tres Segmentos', nameEn: 'Dudunsparce Three-Segment', aliases: ['tres segmentos', 'three segment', 'forma 1', 'form 1'] },
+  '1012-1': { label: 'Obra Maestra', nameEs: 'Poltchageist Obra Maestra', nameEn: 'Poltchageist Artisan', aliases: ['obra maestra', 'artisan', 'genuino', 'forma 1', 'form 1'] },
+  '1013-1': { label: 'Obra Maestra', nameEs: 'Sinistcha Obra Maestra', nameEn: 'Sinistcha Masterpiece', aliases: ['obra maestra', 'masterpiece', 'genuino', 'forma 1', 'form 1'] },
+  '479-1': { label: 'Calor', nameEs: 'Rotom Calor', nameEn: 'Rotom Heat', aliases: ['calor', 'heat', 'horno', 'forma 1', 'form 1'] },
+  '479-2': { label: 'Lavado', nameEs: 'Rotom Lavado', nameEn: 'Rotom Wash', aliases: ['lavado', 'wash', 'lavadora', 'forma 2', 'form 2'] },
+  '479-3': { label: 'Frío', nameEs: 'Rotom Frío', nameEn: 'Rotom Frost', aliases: ['frío', 'frio', 'frost', 'frigorifico', 'forma 3', 'form 3'] },
+  '479-4': { label: 'Ventilador', nameEs: 'Rotom Ventilador', nameEn: 'Rotom Fan', aliases: ['ventilador', 'fan', 'forma 4', 'form 4'] },
+  '479-5': { label: 'Corte', nameEs: 'Rotom Corte', nameEn: 'Rotom Mow', aliases: ['corte', 'mow', 'cortacesped', 'cortacésped', 'forma 5', 'form 5'] },
+};
+
+function applyFriendlyFormNames(pokemonList: any[]) {
+  pokemonList.forEach((p: any) => {
+    const key = `${Number(p.species)}-${Number(p.form || 0)}`;
+    if (FRIENDLY_FORM_NAMES[key]) {
+      const cfg = FRIENDLY_FORM_NAMES[key];
+      p.formLabel = cfg.label;
+      p.displayName = cfg.nameEs;
+      p.displayNameEn = cfg.nameEn;
+      p.searchAliases = Array.from(new Set([...(p.searchAliases || []), ...cfg.aliases]));
+    }
+  });
+}
+
+applyFriendlyFormNames(games.za.pokemon);
+applyFriendlyFormNames(games.sv.pokemon);
+// --- FRIENDLY FORM NAMES PATCH END ---
+
 export const combinedMeta = JSON.parse(readFileSync(join(dataDir, 'meta.json'), 'utf8'));
 
 export const itemLists: Record<string, string[]> = {

@@ -9,6 +9,8 @@ import ordersRouter from './routes/orders'
 import zaRouter from './routes/za'
 import svRouter from './routes/sv'
 import paymentsRouter from './routes/payments'
+import publicOrdersRouter from './routes/publicOrders'
+
 
 
 // Load environment variables
@@ -31,7 +33,7 @@ app.use(express.urlencoded({ extended: true }))
 // Swagger documentation routes
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
   customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'Pokémon SysBot API Docs',
+  customSiteTitle: 'Pokémon API Docs',
 }))
 
 // OpenAPI JSON spec
@@ -108,6 +110,7 @@ app.get('/debug/showdown', (req: express.Request, res: express.Response) => {
 
 // API Routes
 app.use('/api/validate', validateRouter)
+app.use('/api/orders', publicOrdersRouter)
 app.use('/api/orders', authMiddleware, ordersRouter)
 app.use('/api/za', zaRouter)
 app.use('/api/sv', svRouter)

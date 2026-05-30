@@ -43,7 +43,7 @@ let _aliasMap: Record<string, string> | null = null;
 function loadAliasMap(): Record<string, string> {
   if (_aliasMap) return _aliasMap;
   try {
-    const aliasPath = join(process.cwd(), 'data', 'showdown_aliases.json');
+    const aliasPath = join(__dirname, 'data', 'showdown_aliases.json');
     if (existsSync(aliasPath)) {
       _aliasMap = JSON.parse(readFileSync(aliasPath, 'utf8'));
     } else {
