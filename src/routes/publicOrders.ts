@@ -5,6 +5,57 @@ const router = Router()
 export const ordersStore = new Map<string, any>()
 
 /**
+ * Maps items to ensure they contain numeric species IDs for the frontend
+ * and friendly displayName strings.
+ */
+function mapItems(teamPayload: any[], gameVersion: string): any[] {
+  const { games } = require('../lib/gameDb')
+  return teamPayload.map((it: any) => {
+    let resolvedDexId = it.dexId || it.speciesId
+    
+    // If species is already a number, that is the dexId
+    if (typeof it.species === 'number') {
+      resolvedDexId = it.species
+    }
+    
+    if (!resolvedDexId && typeof it.species === 'string') {
+      const nameLower = it.species.toLowerCase().trim()
+      const gKey = (gameVersion === 'legends-za' || gameVersion === 'za') ? 'za' : 'sv'
+      const pokemonList = games[gKey]?.pokemon || []
+      const found = pokemonList.find((p: any) =>
+        p.name.toLowerCase() === nameLower ||
+        p.displayNameEn?.toLowerCase() === nameLower ||
+        p.displayName?.toLowerCase() === nameLower
+      )
+      if (found) {
+        resolvedDexId = Number(found.species)
+      }
+    }
+    
+    const numericSpecies = resolvedDexId ? Number(resolvedDexId) : 1
+    
+    let displayName = it.displayName
+    if (!displayName) {
+      if (typeof it.species === 'string') {
+        displayName = it.species
+      } else {
+        const gKey = (gameVersion === 'legends-za' || gameVersion === 'za') ? 'za' : 'sv'
+        const pokemonList = games[gKey]?.pokemon || []
+        const found = pokemonList.find((p: any) => Number(p.species) === numericSpecies)
+        displayName = found?.displayName || found?.name || 'Pokémon'
+      }
+    }
+
+    return {
+      ...it,
+      status: it.status || 'pending',
+      displayName,
+      species: numericSpecies
+    }
+  })
+}
+
+/**
  * Loads an order from the Supabase database if not present in the memory store,
  * maps its columns, and initializes its visual tracking state.
  */
@@ -27,12 +78,7 @@ async function getOrInitOrder(orderId: string): Promise<any | null> {
     }
 
     const teamPayload = Array.isArray(data.team_payload) ? data.team_payload : [data.team_payload]
-    const items = teamPayload.map((it: any) => ({
-      ...it,
-      status: it.status || 'pending',
-      displayName: it.displayName || it.species || 'Pokémon'
-    }))
-
+    const items = mapItems(teamPayload, data.game_version)
     const isBulk = items.length > 1
 
     const record = {
@@ -93,11 +139,7 @@ router.post('/:id/event', async (req: Request, res: Response) => {
   if (status) record.status = status
   if (queuePosition !== undefined) record.queuePosition = queuePosition
   if (items && Array.isArray(items)) {
-    record.items = items.map((it: any) => ({
-      ...it,
-      status: it.status || 'pending',
-      displayName: it.displayName || it.species || 'Pokémon'
-    }))
+    record.items = mapItems(items, record.game)
   }
 
   // Append to logs
