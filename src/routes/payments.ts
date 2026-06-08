@@ -4,10 +4,20 @@ import Stripe from 'stripe'
 
 const router = Router()
 
-// Initialize Stripe Client
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2023-10-16' as any
-})
+// Initialize Stripe Client lazily to prevent server from crashing on boot if key is missing
+let stripeInstance: any = null;
+function getStripe(): any {
+  if (!stripeInstance) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) {
+      throw new Error('STRIPE_SECRET_KEY is not configured in environment variables');
+    }
+    stripeInstance = new Stripe(key, {
+      apiVersion: '2023-10-16' as any
+    });
+  }
+  return stripeInstance;
+}
 
 
 /**
@@ -194,7 +204,7 @@ router.post('/create-checkout-session', async (req: any, res: Response) => {
 
     console.log(`[payments/checkout] Creating checkout session for user ${userId} with price ${priceId}`)
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       mode: mode,
       payment_method_types: ['card'],
       line_items: [
@@ -236,7 +246,7 @@ router.post('/stripe-webhook', async (req: any, res: Response) => {
   let event: any
 
   try {
-    event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret)
+    event = getStripe().webhooks.constructEvent(req.rawBody, sig, webhookSecret)
   } catch (err: any) {
     console.error(`[stripe-webhook] Signature verification failed: ${err.message}`)
     return res.status(400).send(`Webhook Error: ${err.message}`)
