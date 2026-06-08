@@ -1,8 +1,7 @@
-import { Client, Intents } from 'discord.js-selfbot-v13';
 import { ordersStore, updateOrderState } from '../routes/publicOrders';
 
 class DiscordBridgeService {
-  private client: Client;
+  private client: any;
   private isConnected: boolean = false;
   private targetChannelId: string | null = null;
   private savedToken: string | null = null;
@@ -13,18 +12,24 @@ class DiscordBridgeService {
     this.setupListeners();
   }
 
-  private createClient(): Client {
+  private createClient(): any {
     const isBot = process.env.DISCORD_IS_BOT === 'true';
-    const clientOptions: any = {};
     if (isBot) {
-      clientOptions.intents = [
-        Intents.FLAGS.GUILDS,
-        Intents.FLAGS.GUILD_MESSAGES,
-        Intents.FLAGS.DIRECT_MESSAGES,
-        Intents.FLAGS.MESSAGE_CONTENT
-      ];
+      console.log('[DiscordBridge] Instantiating official discord.js client (isBot: true)...');
+      const { Client: BotClient, GatewayIntentBits } = require('discord.js');
+      return new BotClient({
+        intents: [
+          GatewayIntentBits.Guilds,
+          GatewayIntentBits.GuildMessages,
+          GatewayIntentBits.DirectMessages,
+          GatewayIntentBits.MessageContent
+        ]
+      });
+    } else {
+      console.log('[DiscordBridge] Instantiating discord.js-selfbot-v13 client (isBot: false)...');
+      const { Client: SelfClient } = require('discord.js-selfbot-v13');
+      return new SelfClient();
     }
-    return new Client(clientOptions);
   }
 
   private setupListeners() {
@@ -33,7 +38,7 @@ class DiscordBridgeService {
       this.isConnected = true;
     });
 
-    this.client.on('error', (error) => {
+    this.client.on('error', (error: any) => {
       console.error('[DiscordBridge] Connection error:', error);
       this.isConnected = false;
       // Intentamos reconectar en 10 segundos si tenemos el token
@@ -54,7 +59,7 @@ class DiscordBridgeService {
     });
 
     // Listener para parsear mensajes del bot en el canal
-    this.client.on('messageCreate', async (message) => {
+    this.client.on('messageCreate', async (message: any) => {
       try {
         await this.handleIncomingMessage(message);
       } catch (err) {
@@ -177,7 +182,7 @@ class DiscordBridgeService {
 
     try {
       const channel = await this.client.channels.fetch(activeChannelId);
-      if (channel && channel.isText()) {
+      if (channel && (typeof channel.isText === 'function' ? channel.isText() : (channel as any).isTextBased())) {
         console.log(`[DiscordBridge] Sending via WebSocket to channel ${activeChannelId}:\n${commandText}`);
         if (attachment) {
           await (channel as any).send({
