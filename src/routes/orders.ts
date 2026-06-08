@@ -4,6 +4,7 @@ import { addOrderToQueue } from '../queue/OrderQueue'
 import { validate } from '../lib/gameDb'
 import { CreateOrderRequest, CreateOrderResponse } from '../lib/order-types'
 import { AuthRequest } from '../middleware/auth'
+import { updateOrderState } from './publicOrders'
 
 const router = Router()
 
@@ -113,6 +114,9 @@ router.post('/', async (req: AuthRequest, res: Response) => {
       console.error('Supabase insert error:', error)
       return res.status(500).json({ error: 'Failed to create order', details: error.message })
     }
+
+    // Initialize order state in memory so the Discord bridge can match it by trade code
+    await updateOrderState(data.id, { status: 'pending' })
 
     const response: CreateOrderResponse = {
       orderId: data.id,
