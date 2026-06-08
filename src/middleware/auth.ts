@@ -42,13 +42,13 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
     }
 
     const PAID_PLANS = ['gym', 'elite', 'champion', 'premium']
-    const rawPlan = user.app_metadata?.plan
+    const rawPlan = user.app_metadata?.plan || user.user_metadata?.plan || 'free'
     const isPremium = rawPlan && PAID_PLANS.includes(String(rawPlan).toLowerCase())
 
     req.user = {
       id: user.id,
       email: user.email ?? '',
-      plan: isPremium ? rawPlan : 'free',
+      plan: isPremium ? String(rawPlan).toLowerCase() : 'free',
     }
     console.log('[auth] SUCCESS: Authenticated user', user.id, '| plan:', req.user.plan)
 
@@ -72,13 +72,13 @@ export async function optionalAuth(req: AuthRequest, res: Response, next: NextFu
       const { data: { user } } = await supabase.auth.getUser(token)
       if (user) {
         const PAID_PLANS = ['gym', 'elite', 'champion', 'premium']
-        const rawPlan = user.app_metadata?.plan
+        const rawPlan = user.app_metadata?.plan || user.user_metadata?.plan || 'free'
         const isPremium = rawPlan && PAID_PLANS.includes(String(rawPlan).toLowerCase())
 
         req.user = {
           id: user.id,
           email: user.email ?? '',
-          plan: isPremium ? rawPlan : 'free',
+          plan: isPremium ? String(rawPlan).toLowerCase() : 'free',
         }
       }
     }
