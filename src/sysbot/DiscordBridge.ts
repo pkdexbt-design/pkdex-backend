@@ -278,39 +278,6 @@ class DiscordBridgeService {
       parsedCode = (match[1] + match[2]).replace(/[^0-9]/g, '');
     }
 
-    let matchedOrderId: string | null = null;
-    let matchedOrder: any = null;
-
-    // 4. Lookup active order in ordersStore by trade code if present
-    if (parsedCode) {
-      for (const [id, record] of ordersStore.entries()) {
-        const recordCode = record.tradeCode?.replace(/[^0-9]/g, '');
-        if (recordCode === parsedCode && record.status !== 'completed' && record.status !== 'failed' && record.status !== 'expired') {
-          matchedOrderId = id;
-          matchedOrder = record;
-          break;
-        }
-      }
-
-      if (matchedOrderId) {
-        this.activeOrdersByChannel.set(message.channel.id, matchedOrderId);
-        console.log(`[DiscordBridge] 🔍 Matched order ${matchedOrderId} by trade code ${parsedCode} in channel ${message.channel.id}`);
-      }
-    }
-
-    // 5. If not matched by trade code, reuse currently active order for this channel
-    if (!matchedOrderId) {
-      const savedOrderId = this.activeOrdersByChannel.get(message.channel.id);
-      if (savedOrderId && ordersStore.has(savedOrderId)) {
-        const record = ordersStore.get(savedOrderId);
-        if (record.status !== 'completed' && record.status !== 'failed' && record.status !== 'expired' && record.status !== 'partial_failed') {
-          matchedOrderId = savedOrderId;
-          matchedOrder = record;
-          console.log(`[DiscordBridge] 🔗 Reused active order ${matchedOrderId} for channel ${message.channel.id}`);
-        }
-      }
-    }
-
     const contentLower = content.toLowerCase();
     
     // Parse status based on keywords
@@ -323,21 +290,51 @@ class DiscordBridgeService {
     const isSearching = !isPreparing && ['searching', 'introduce', 'esperando', 'room', 'código', 'codigo', 'waiting'].some(keyword => contentLower.includes(keyword));
     const isTrading = ['trading', 'intercambiando', 'curso', 'conectado'].some(keyword => contentLower.includes(keyword));
 
-    // 6. Match by Pokemon name in queue if order is new (queued) and not matched yet
-    if (!matchedOrderId && isQueued) {
-      const receivingMatch = /receiving:\s*([a-z0-9\-'\s]+?)(?:\.|$)/i.exec(content);
-      const pokemonName = receivingMatch ? receivingMatch[1].trim().toLowerCase() : null;
+    // Extract Pokemon name if present in message
+    let pokemonName: string | null = null;
+    const receivingMatch = /receiving:\s*([a-z0-9\-'\s]+?)(?:\.|$)/i.exec(content);
+    if (receivingMatch) {
+      pokemonName = receivingMatch[1].trim().toLowerCase();
+    } else {
+      const tradeInitMatch = /trade\s*\(([^)]+)\)/i.exec(content);
+      if (tradeInitMatch) {
+        pokemonName = tradeInitMatch[1].trim().toLowerCase();
+      }
+    }
 
+    let matchedOrderId: string | null = null;
+    let matchedOrder: any = null;
+
+    // A. Match by trade code (most specific)
+    if (parsedCode) {
+      for (const [id, record] of ordersStore.entries()) {
+        const recordCode = record.tradeCode?.replace(/[^0-9]/g, '');
+        if (recordCode === parsedCode && record.status !== 'completed' && record.status !== 'failed' && record.status !== 'expired') {
+          matchedOrderId = id;
+          matchedOrder = record;
+          break;
+        }
+      }
+      if (matchedOrderId) {
+        this.activeOrdersByChannel.set(message.channel.id, matchedOrderId);
+        console.log(`[DiscordBridge] 🔍 Matched order ${matchedOrderId} by trade code ${parsedCode} in channel ${message.channel.id}`);
+      }
+    }
+
+    // B. Match by Pokemon name in pending/active orders (specific)
+    if (!matchedOrderId && pokemonName) {
       let bestOrderId: string | null = null;
       let latestTime = 0;
 
       for (const [id, record] of ordersStore.entries()) {
-        if (record.status !== 'submitted' && record.status !== 'pending') continue;
+        if (record.status === 'completed' || record.status === 'failed' || record.status === 'expired' || record.status === 'partial_failed') {
+          continue;
+        }
 
         const channelGame = this.getGameForChannel(message.channel.id);
         if (channelGame && record.game !== channelGame) continue;
 
-        const matchesPokemon = !pokemonName || record.items.some((it: any) => 
+        const matchesPokemon = record.items.some((it: any) => 
           String(it.displayName || '').toLowerCase() === pokemonName ||
           String(it.species || '').toLowerCase() === pokemonName
         );
@@ -355,11 +352,40 @@ class DiscordBridgeService {
         matchedOrderId = bestOrderId;
         matchedOrder = ordersStore.get(bestOrderId);
         this.activeOrdersByChannel.set(message.channel.id, matchedOrderId);
-        console.log(`[DiscordBridge] 🔗 Matched new queued order ${matchedOrderId} by Pokemon ${pokemonName || 'any'} in channel ${message.channel.id}`);
+        console.log(`[DiscordBridge] 🔍 Matched order ${matchedOrderId} by Pokemon name "${pokemonName}" in channel ${message.channel.id}`);
+      }
+    }
+
+    // C. Fallback: Reuse active order for channel (least specific)
+    if (!matchedOrderId) {
+      const savedOrderId = this.activeOrdersByChannel.get(message.channel.id);
+      if (savedOrderId && ordersStore.has(savedOrderId)) {
+        const record = ordersStore.get(savedOrderId);
+        if (record.status !== 'completed' && record.status !== 'failed' && record.status !== 'expired' && record.status !== 'partial_failed') {
+          matchedOrderId = savedOrderId;
+          matchedOrder = record;
+          console.log(`[DiscordBridge] 🔗 Reused active order ${matchedOrderId} for channel ${message.channel.id} (fallback)`);
+        }
       }
     }
 
     if (!matchedOrder || !matchedOrderId) return;
+
+    // Update trade code if different
+    if (parsedCode && matchedOrder.tradeCode?.replace(/[^0-9]/g, '') !== parsedCode) {
+      console.log(`[DiscordBridge] 🔄 Updating tradeCode for order ${matchedOrderId} to ${parsedCode}`);
+      matchedOrder.tradeCode = parsedCode;
+      try {
+        const { getSupabase } = require('../lib/supabase');
+        const supabase = getSupabase();
+        await supabase
+          .from('orders')
+          .update({ trade_code: parsedCode })
+          .eq('id', matchedOrderId);
+      } catch (dbErr: any) {
+        console.error(`[DiscordBridge] Failed to update trade_code in Supabase for ${matchedOrderId}:`, dbErr.message || dbErr);
+      }
+    }
 
     const items = matchedOrder.items ? [...matchedOrder.items] : [];
 
@@ -480,9 +506,25 @@ class DiscordBridgeService {
         queuePosition = parseInt(posMatch[1] || posMatch[2], 10);
       }
 
+      let estimatedTime: string | undefined;
+      const estMatch = /(?:estimated|estimado|espera):\s*([\d,.]+)\s*(?:minutes|minutos|min)/i.exec(content);
+      if (estMatch) {
+        estimatedTime = `${estMatch[1]} minutos`;
+      } else {
+        const fallbackMatch = /([\d,.]+)\s*(?:minutes|minutos|min)/i.exec(content);
+        if (fallbackMatch) {
+          estimatedTime = `${fallbackMatch[1]} minutos`;
+        }
+      }
+
+      let msg = `SysBot añadió el pedido a la cola. Posición: ${queuePosition || 'Desconocida'}.`;
+      if (estimatedTime) {
+        msg += ` Tiempo estimado de espera: ${estimatedTime}.`;
+      }
+
       await updateOrderState(matchedOrderId, {
         status: 'queued',
-        message: `SysBot añadió el pedido a la cola. Posición: ${queuePosition || 'Desconocida'}.`,
+        message: msg,
         queuePosition
       });
     }

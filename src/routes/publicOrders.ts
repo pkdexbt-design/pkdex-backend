@@ -96,6 +96,7 @@ async function getOrInitOrder(orderId: string): Promise<any | null> {
           message: 'Pedido enviado. Esperando en cola...'
         }
       ],
+      message: null,
       createdAt: data.created_at,
       updatedAt: new Date().toISOString()
     }
@@ -135,6 +136,7 @@ export async function updateOrderState(
 
   if (status) record.status = status
   if (queuePosition !== undefined) record.queuePosition = queuePosition
+  if (message) record.message = message
   if (items && Array.isArray(items)) {
     record.items = mapItems(items, record.game)
   }
