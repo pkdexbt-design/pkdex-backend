@@ -5,8 +5,8 @@ export interface AuthRequest extends Request {
   user?: {
     id: string
     email: string
-    /** 'free' | 'premium' — defaults to 'free' if not set */
-    plan: 'free' | 'premium'
+    /** 'free' | 'gym' | 'elite' | 'champion' | 'premium' — defaults to 'free' if not set */
+    plan: string
   }
 }
 
@@ -41,10 +41,14 @@ export async function authMiddleware(req: AuthRequest, res: Response, next: Next
       return res.status(401).json({ error: 'Invalid or expired token' })
     }
 
+    const PAID_PLANS = ['gym', 'elite', 'champion', 'premium']
+    const rawPlan = user.app_metadata?.plan
+    const isPremium = rawPlan && PAID_PLANS.includes(String(rawPlan).toLowerCase())
+
     req.user = {
       id: user.id,
       email: user.email ?? '',
-      plan: (user.app_metadata?.plan === 'premium') ? 'premium' : 'free',
+      plan: isPremium ? rawPlan : 'free',
     }
     console.log('[auth] SUCCESS: Authenticated user', user.id, '| plan:', req.user.plan)
 
@@ -67,10 +71,14 @@ export async function optionalAuth(req: AuthRequest, res: Response, next: NextFu
       const supabase = getSupabase()
       const { data: { user } } = await supabase.auth.getUser(token)
       if (user) {
+        const PAID_PLANS = ['gym', 'elite', 'champion', 'premium']
+        const rawPlan = user.app_metadata?.plan
+        const isPremium = rawPlan && PAID_PLANS.includes(String(rawPlan).toLowerCase())
+
         req.user = {
           id: user.id,
           email: user.email ?? '',
-          plan: (user.app_metadata?.plan === 'premium') ? 'premium' : 'free',
+          plan: isPremium ? rawPlan : 'free',
         }
       }
     }
