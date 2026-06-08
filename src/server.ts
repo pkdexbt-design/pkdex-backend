@@ -63,7 +63,7 @@ app.get('/api-docs.json', (req, res) => {
  *               $ref: '#/components/schemas/HealthCheckResponse'
  */
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+  res.json({ status: 'ok', version: '1.0.1-prefix-fix', timestamp: new Date().toISOString() })
 })
 
 // DiscordBridge status endpoint — for debugging
