@@ -93,7 +93,11 @@ export const orderWorker = new Worker(
       let commandPrefix = '!';
       
       if (gameVersion === 'scarlet' || gameVersion === 'violet') {
-        targetChannelId = process.env.DISCORD_CHANNEL_ID_SV?.replace(/[^0-9]/g, '');
+        if (userPlan === 'free') {
+          targetChannelId = (process.env.DISCORD_CHANNEL_ID_SV_FREE || process.env.DISCORD_CHANNEL_ID_SV)?.replace(/[^0-9]/g, '');
+        } else {
+          targetChannelId = (process.env.DISCORD_CHANNEL_ID_SV_PREMIUM || process.env.DISCORD_CHANNEL_ID_SV)?.replace(/[^0-9]/g, '');
+        }
         commandPrefix = '%'; // SV (uses %trade)
       } else if (gameVersion === 'legends-za') {
         if (userPlan === 'free') {

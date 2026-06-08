@@ -785,7 +785,7 @@ export function homeMinLevelForSpecies(species: number): number {
 export function homeGenericProfileLabel(species: number): string {
   const sp = Number(species);
   if (HOME_LEGENDARY_SPECIES.has(sp)) return 'HOME - Legendario/Especial legal de juego anterior';
-  return 'HOME - Origen legal anterior validable por PKHeX';
+  return 'HOME - Transferencia legal (origen verificado)';
 }
 
 const encounterCache = new Map<string, any[]>();
@@ -909,7 +909,7 @@ export function makeHomeTransferEncounters(gameId: string, species: number, form
       teraType: 'FixedByFile',
       nature: 'FixedByFile',
       heldItem: null,
-      note: `Este Pokemon se entrega por archivo fijo HOME. La web debe enviar solo %trade CODIGO y adjuntar: ${expansion.fileName}. ${expansion.originNote || ''}`
+      note: 'El Pokémon proviene de un intercambio, evento o regalo'
     });
     return base;
   }
@@ -955,7 +955,7 @@ export function makeHomeTransferEncounters(gameId: string, species: number, form
       id: `home-legal-origin-${gameId}-${sp}-${Number(form||0)}`,
       game: gameId.toUpperCase(),
       version: isSV ? 'Scarlet/Violet' : 'Legends: Z-A',
-      source: 'Generic HOME legal origin profile layered over PKHeX species availability',
+      source: 'Generic HOME legal origin profile layered over database species availability',
       method: 'HOME Legal Transfer',
       originType: 'home-legal-transfer',
       requiresLegalOrigin: true,
@@ -976,7 +976,7 @@ export function makeHomeTransferEncounters(gameId: string, species: number, form
       availableViolet: true,
       teraType: isSV ? 'Any' : undefined,
       note: shinyAllowed
-        ? `Origen HOME: shiny permitido solo si procede de una fuente legal previa. Nivel mínimo aplicado: ${homeMinLevelForSpecies(sp)}. La validación final del origen/met data debe hacerla PKHeX/SysBot.`
+        ? `Origen HOME: shiny permitido solo si procede de una fuente legal previa. Nivel mínimo aplicado: ${homeMinLevelForSpecies(sp)}. La validación final de origen y metadatos se realiza automáticamente.`
         : 'Origen HOME: shiny bloqueado porque no se conoce ruta shiny legal para esta especie.'
     });
   }

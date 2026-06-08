@@ -27,7 +27,11 @@ app.use((req, res, next) => {
 
 // Middleware
 app.use(corsMiddleware)
-app.use(express.json())
+app.use(express.json({
+  verify: (req: any, res, buf) => {
+    req.rawBody = buf
+  }
+}))
 app.use(express.urlencoded({ extended: true }))
 
 // Swagger documentation routes

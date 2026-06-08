@@ -122,19 +122,16 @@ router.get('/:id/status', async (req: Request, res: Response) => {
 })
 
 /**
- * POST /api/orders/:id/event
- * Allows the Discord listener / worker to publish status updates.
+ * Updates the state of an order in memory (ordersStore) and updates Supabase.
  */
-router.post('/:id/event', async (req: Request, res: Response) => {
-  const { id } = req.params
-  const { status, message, items, queuePosition } = req.body
+export async function updateOrderState(
+  orderId: string,
+  eventData: { status?: string; message?: string; items?: any[]; queuePosition?: number }
+): Promise<any | null> {
+  const record = await getOrInitOrder(orderId)
+  if (!record) return null
 
-  console.log(`[publicOrders] Event received for order ${id}: status=${status}, message=${message}`)
-
-  const record = await getOrInitOrder(id)
-  if (!record) {
-    return res.status(404).json({ error: 'Order not found' })
-  }
+  const { status, message, items, queuePosition } = eventData
 
   if (status) record.status = status
   if (queuePosition !== undefined) record.queuePosition = queuePosition
@@ -159,10 +156,28 @@ router.post('/:id/event', async (req: Request, res: Response) => {
       await supabase
         .from('orders')
         .update({ status })
-        .eq('id', id)
-    } catch (dbErr) {
-      console.error(`[publicOrders] Failed to update status in Supabase for ${id}:`, dbErr)
+        .eq('id', orderId)
+    } catch (dbErr: any) {
+      console.error(`[publicOrders] Failed to update status in Supabase for ${orderId}:`, dbErr.message || dbErr)
     }
+  }
+
+  return record
+}
+
+/**
+ * POST /api/orders/:id/event
+ * Allows the Discord listener / worker to publish status updates.
+ */
+router.post('/:id/event', async (req: Request, res: Response) => {
+  const { id } = req.params
+  const { status, message, items, queuePosition } = req.body
+
+  console.log(`[publicOrders] Event received for order ${id}: status=${status}, message=${message}`)
+
+  const record = await updateOrderState(id, { status, message, items, queuePosition })
+  if (!record) {
+    return res.status(404).json({ error: 'Order not found' })
   }
 
   return res.json({ ok: true, order: record })

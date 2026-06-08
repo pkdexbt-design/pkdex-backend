@@ -1,10 +1,10 @@
 {
   "description": "Perfiles HOME utilizados por PKDEX. HOME ya no es un comodín 1-100: cada entrada HOME aplica un perfil de origen legal, con nivel mínimo y, cuando procede, ball/shiny fijo.",
-  "importantRule": "Los encuentros nativos shiny locked siguen bloqueados. HOME aparece como origen separado y exige origen legal previo validable por PKHeX/SysBot.",
+  "importantRule": "Los encuentros nativos shiny locked siguen bloqueados. HOME aparece como origen separado y exige origen legal previo validable automáticamente.",
   "genericRules": {
     "legendaryMinLevel": 50,
     "evolutionMinLevelMap": "Implementado en src/server.js como HOME_MIN_LEVEL_BY_SPECIES",
-    "finalValidation": "PKHeX/SysBot debe validar met data, origin game, PID/EC, moves, ball y ribbons cuando genere el archivo final."
+    "finalValidation": "La validación final de origen, movimientos, pokéball y cintas se realiza automáticamente en el servidor."
   },
   "specificProfiles": [
     {

@@ -1,7 +1,14 @@
 import { Router, Response } from 'express'
 import { getSupabase } from '../lib/supabase'
+import Stripe from 'stripe'
 
 const router = Router()
+
+// Initialize Stripe Client
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2023-10-16' as any
+})
+
 
 /**
  * @swagger
@@ -127,22 +134,163 @@ router.post('/update-plan', async (req: any, res: Response) => {
 
 /**
  * @swagger
+ * /api/payments/create-checkout-session:
+ *   post:
+ *     summary: Crear una sesión de pago en Stripe
+ *     description: Permite generar una sesión de Stripe Checkout para suscripción o pago único.
+ *     tags:
+ *       - Payments
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [priceId, userId]
+ *             properties:
+ *               priceId:
+ *                 type: string
+ *                 description: ID de precio o producto de Stripe (ej. price_xxx)
+ *               userId:
+ *                 type: string
+ *                 description: ID del usuario en Supabase
+ *               successUrl:
+ *                 type: string
+ *               cancelUrl:
+ *                 type: string
+ *               mode:
+ *                 type: string
+ *                 enum: [subscription, payment]
+ *     responses:
+ *       200:
+ *         description: Sesión de checkout creada
+ *       400:
+ *         description: Datos inválidos
+ *       500:
+ *         description: Error al crear la sesión
+ */
+router.post('/create-checkout-session', async (req: any, res: Response) => {
+  try {
+    let { priceId, userId, successUrl, cancelUrl, mode = 'subscription', planId, billing } = req.body
+
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId' })
+    }
+
+    if (!priceId && planId) {
+      const cycle = billing === 'annual' ? 'annual' : 'monthly'
+      const key = `${planId}_${cycle}`
+      const envKey = `STRIPE_PRICE_${planId.toUpperCase()}_${cycle.toUpperCase()}`
+      priceId = process.env[envKey]
+
+      if (!priceId) {
+        return res.status(400).json({ error: `Stripe Price ID not configured for ${key} (env variable ${envKey} is missing)` })
+      }
+    }
+
+    if (!priceId) {
+      return res.status(400).json({ error: 'Missing priceId or planId' })
+    }
+
+    console.log(`[payments/checkout] Creating checkout session for user ${userId} with price ${priceId}`)
+
+    const session = await stripe.checkout.sessions.create({
+      mode: mode,
+      payment_method_types: ['card'],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      client_reference_id: userId,
+      success_url: successUrl || `${req.protocol}://${req.get('host')}/success.html?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl || `${req.protocol}://${req.get('host')}/memberships.html`,
+    })
+
+    return res.status(200).json({ id: session.id, url: session.url })
+  } catch (err: any) {
+    console.error('[payments/checkout] Error creating checkout session:', err)
+    return res.status(500).json({ error: err.message || 'Internal Stripe error' })
+  }
+})
+
+/**
+ * @swagger
  * /api/payments/stripe-webhook:
  *   post:
- *     summary: Esqueleto de webhook para Stripe
- *     description: Endpoint preparado para recibir notificaciones directas de eventos de Stripe Checkout
+ *     summary: Webhook real de Stripe para recibir confirmaciones de compra
+ *     description: Actualiza de forma segura el rol del usuario a 'premium' en Supabase tras completarse la compra.
  *     tags:
  *       - Payments
  */
 router.post('/stripe-webhook', async (req: any, res: Response) => {
-  // Skeleton ready for Stripe Checkout session completion
-  // When ready to use:
-  // 1. Install stripe: npm install stripe
-  // 2. Read rawBody/signature and use stripe.webhooks.constructEvent
-  // 3. Extract customer email or metadata.userId
-  // 4. Update via supabase auth admin API
-  console.log('[stripe-webhook] Webhook endpoint touched. Ready for direct Stripe integration.')
-  return res.status(200).json({ received: true, note: 'Ready for production connection' })
+  const sig = req.headers['stripe-signature']
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+
+  if (!sig || !webhookSecret) {
+    console.error('[stripe-webhook] Missing stripe-signature header or STRIPE_WEBHOOK_SECRET in .env')
+    return res.status(400).send('Webhook Error: Missing signature or secret configuration')
+  }
+
+  let event: any
+
+  try {
+    event = stripe.webhooks.constructEvent(req.rawBody, sig, webhookSecret)
+  } catch (err: any) {
+    console.error(`[stripe-webhook] Signature verification failed: ${err.message}`)
+    return res.status(400).send(`Webhook Error: ${err.message}`)
+  }
+
+  console.log(`[stripe-webhook] Received event type: ${event.type}`)
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as any
+    const userId = session.client_reference_id
+    const customerEmail = session.customer_details?.email
+
+    console.log(`[stripe-webhook] Checkout completed for session ${session.id}. User: ${userId}, Email: ${customerEmail}`)
+
+    const supabase = getSupabase()
+    let targetUserId = userId
+
+    try {
+      // Fallback: If no client_reference_id is provided, try searching for the user by their email address
+      if (!targetUserId && customerEmail) {
+        console.log(`[stripe-webhook] Attempting to resolve user ID by customer email: ${customerEmail}`)
+        const { data, error: listError } = await supabase.auth.admin.listUsers()
+        if (!listError && data?.users) {
+          const foundUser = data.users.find((u: any) => u.email?.toLowerCase() === customerEmail.toLowerCase())
+          if (foundUser) {
+            targetUserId = foundUser.id
+            console.log(`[stripe-webhook] Resolved user ID to: ${targetUserId}`)
+          }
+        }
+      }
+
+      if (targetUserId) {
+        console.log(`[stripe-webhook] Upgrading user ${targetUserId} to plan: premium`)
+        const { error: updateError } = await supabase.auth.admin.updateUserById(
+          targetUserId,
+          { app_metadata: { plan: 'premium' } }
+        )
+
+        if (updateError) {
+          console.error(`[stripe-webhook] Error updating user metadata in Supabase:`, updateError)
+          return res.status(500).send('Database update failed')
+        }
+
+        console.log(`[stripe-webhook] ✅ Upgrade successful for user ${targetUserId}`)
+      } else {
+        console.error('[stripe-webhook] ❌ Could not resolve user ID from metadata or email')
+      }
+    } catch (err: any) {
+      console.error('[stripe-webhook] Supabase admin operation failed:', err)
+      return res.status(500).send('Supabase interaction failed')
+    }
+  }
+
+  return res.status(200).json({ received: true })
 })
 
 export default router
