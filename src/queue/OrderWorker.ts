@@ -105,7 +105,7 @@ export const orderWorker = new Worker(
           commandPrefix = '!'; // ZA Free
         } else {
           targetChannelId = (process.env.DISCORD_CHANNEL_ID_ZA_PREMIUM || process.env.DISCORD_CHANNEL_ID_ZA)?.replace(/[^0-9]/g, '');
-          commandPrefix = '%'; // ZA Premium (premium ZA bot uses %trade)
+          commandPrefix = '$'; // ZA Premium (premium ZA bot uses $trade)
         }
       }
 

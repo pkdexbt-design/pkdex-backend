@@ -111,60 +111,6 @@ app.get('/debug/showdown', (req: express.Request, res: express.Response) => {
     commandPreview: `!trade 12345678\n${text}`
   })
 })
-
-// Debug endpoint: Fetch last 30 messages of a channel using live Discord client
-app.get('/debug/messages', async (req: express.Request, res: express.Response) => {
-  try {
-    const channelId = (req.query.channelId as string) || '1495899324436058252';
-    const { discordBridge } = require('./sysbot/DiscordBridge');
-    const client = (discordBridge as any).client;
-    
-    if (!client) {
-      return res.status(500).json({ error: 'Discord client not initialized' });
-    }
-    
-    const channel = await client.channels.fetch(channelId);
-    if (!channel) {
-      return res.status(404).json({ error: `Channel ${channelId} not found` });
-    }
-    
-    if (typeof channel.isText === 'function' ? channel.isText() : channel.isTextBased()) {
-      const messages = await channel.messages.fetch({ limit: 30 });
-      const list = Array.from(messages.values()).map((msg: any) => ({
-        id: msg.id,
-        author: msg.author.tag,
-        content: msg.content,
-        createdAt: msg.createdAt,
-        attachments: Array.from(msg.attachments.values()).map((a: any) => a.name)
-      }));
-      return res.json({ channel: channel.name, messages: list });
-    } else {
-      return res.status(400).json({ error: 'Channel is not text-based' });
-    }
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message || String(err) });
-  }
-})
-
-// Debug endpoint: Send a test trade command to Discord with a specific prefix
-app.get('/debug/send-test', async (req: express.Request, res: express.Response) => {
-  try {
-    const channelId = (req.query.channelId as string) || '1495899324436058252';
-    const prefix = (req.query.prefix as string) || '%';
-    const code = (req.query.code as string) || '55476893';
-    const species = (req.query.species as string) || 'Bulbasaur';
-    
-    const { discordBridge } = require('./sysbot/DiscordBridge');
-    
-    const showdownText = `${species}\nLevel: 16\nLanguage: Spanish\nNaive Nature`;
-    const success = await discordBridge.sendTradeCommand(showdownText, code, channelId, prefix);
-    
-    return res.json({ success, prefix, channelId, code, species });
-  } catch (err: any) {
-    return res.status(500).json({ error: err.message || String(err) });
-  }
-})
-
 // API Routes
 app.use('/api/validate', validateRouter)
 app.use('/api/orders', publicOrdersRouter)
