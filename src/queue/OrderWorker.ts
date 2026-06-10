@@ -88,24 +88,27 @@ export const orderWorker = new Worker(
     try {
       console.log(`[OrderWorker] Sending order ${orderId} directly to Discord`)
 
-      // Determine target channel based on gameVersion and user plan (PSAS-14)
       let targetChannelId: string | undefined;
       let commandPrefix = '!';
-      
+
+      // Allow per-game prefix overrides via env vars (for custom bot configs)
+      const svPrefix = process.env.DISCORD_PREFIX_SV?.trim() || '%';
+      const zaPrefix = process.env.DISCORD_PREFIX_ZA?.trim() || '!';
+
       if (gameVersion === 'scarlet' || gameVersion === 'violet') {
         if (userPlan === 'free') {
           targetChannelId = (process.env.DISCORD_CHANNEL_ID_SV_FREE || process.env.DISCORD_CHANNEL_ID_SV)?.replace(/[^0-9]/g, '');
         } else {
           targetChannelId = (process.env.DISCORD_CHANNEL_ID_SV_PREMIUM || process.env.DISCORD_CHANNEL_ID_SV)?.replace(/[^0-9]/g, '');
         }
-        commandPrefix = '%'; // SV (uses %trade)
+        commandPrefix = svPrefix;
       } else if (gameVersion === 'legends-za') {
         if (userPlan === 'free') {
           targetChannelId = process.env.DISCORD_CHANNEL_ID_ZA_FREE?.replace(/[^0-9]/g, '');
-          commandPrefix = '!'; // ZA Free
+          commandPrefix = zaPrefix;
         } else {
           targetChannelId = (process.env.DISCORD_CHANNEL_ID_ZA_PREMIUM || process.env.DISCORD_CHANNEL_ID_ZA)?.replace(/[^0-9]/g, '');
-          commandPrefix = '$'; // ZA Premium (premium ZA bot uses $trade)
+          commandPrefix = zaPrefix;
         }
       }
 
