@@ -91,24 +91,27 @@ export const orderWorker = new Worker(
       let targetChannelId: string | undefined;
       let commandPrefix = '!';
 
-      // Allow per-game prefix overrides via env vars (for custom bot configs)
-      const svPrefix = process.env.DISCORD_PREFIX_SV?.trim() || '%';
-      const zaPrefix = process.env.DISCORD_PREFIX_ZA?.trim() || '!';
+      // Allow per-game & per-tier prefix overrides via env vars
+      const svFreePrefix = process.env.DISCORD_PREFIX_SV_FREE?.trim() || process.env.DISCORD_PREFIX_SV?.trim() || '%';
+      const svPremiumPrefix = process.env.DISCORD_PREFIX_SV_PREMIUM?.trim() || process.env.DISCORD_PREFIX_SV?.trim() || '%';
+      const zaFreePrefix = process.env.DISCORD_PREFIX_ZA_FREE?.trim() || process.env.DISCORD_PREFIX_ZA?.trim() || '!';
+      const zaPremiumPrefix = process.env.DISCORD_PREFIX_ZA_PREMIUM?.trim() || process.env.DISCORD_PREFIX_ZA?.trim() || '%';
 
       if (gameVersion === 'scarlet' || gameVersion === 'violet') {
         if (userPlan === 'free') {
           targetChannelId = (process.env.DISCORD_CHANNEL_ID_SV_FREE || process.env.DISCORD_CHANNEL_ID_SV)?.replace(/[^0-9]/g, '');
+          commandPrefix = svFreePrefix;
         } else {
           targetChannelId = (process.env.DISCORD_CHANNEL_ID_SV_PREMIUM || process.env.DISCORD_CHANNEL_ID_SV)?.replace(/[^0-9]/g, '');
+          commandPrefix = svPremiumPrefix;
         }
-        commandPrefix = svPrefix;
       } else if (gameVersion === 'legends-za') {
         if (userPlan === 'free') {
           targetChannelId = process.env.DISCORD_CHANNEL_ID_ZA_FREE?.replace(/[^0-9]/g, '');
-          commandPrefix = zaPrefix;
+          commandPrefix = zaFreePrefix;
         } else {
           targetChannelId = (process.env.DISCORD_CHANNEL_ID_ZA_PREMIUM || process.env.DISCORD_CHANNEL_ID_ZA)?.replace(/[^0-9]/g, '');
-          commandPrefix = zaPrefix;
+          commandPrefix = zaPremiumPrefix;
         }
       }
 
