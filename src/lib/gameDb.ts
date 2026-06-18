@@ -49,6 +49,7 @@ if (games.sv.meta?.summary) games.sv.meta.summary.pokemonCount = games.sv.pokemo
 
 // --- FRIENDLY FORM NAMES PATCH START ---
 const FRIENDLY_FORM_NAMES: Record<string, { label: string; nameEs: string; nameEn: string; aliases: string[] }> = {
+  '670-5': { label: 'Flor Eterna', nameEs: 'Floette Flor Eterna', nameEn: 'Floette Eternal Flower', aliases: ['flor eterna', 'eternal flower', 'floette flor eterna', 'floette eternal flower', 'eien', 'forma 5', 'form 5'] },
   '74-1': { label: 'Alola', nameEs: 'Geodude de Alola', nameEn: 'Alolan Geodude', aliases: ['alola', 'alolan', 'forma 1', 'form 1'] },
   '75-1': { label: 'Alola', nameEs: 'Graveler de Alola', nameEn: 'Alolan Graveler', aliases: ['alola', 'alolan', 'forma 1', 'form 1'] },
   '76-1': { label: 'Alola', nameEs: 'Golem de Alola', nameEn: 'Alolan Golem', aliases: ['alola', 'alolan', 'forma 1', 'form 1'] },
@@ -204,6 +205,66 @@ const HOME_MIN_LEVEL_BY_SPECIES = new Map<number, number>(Object.entries({
 }).map(([k,v]) => [Number(k), v]) as any);
 
 const HOME_SPECIFIC_PROFILES = [
+  {
+    species: 716,
+    games: ['za'],
+    idSuffix: 'descartes-shiny-xerneas-za',
+    homeProfileId: 'home-descartes-shiny-xerneas',
+    locationName: 'HOME - Evento Shiny Xerneas',
+    locationNameEn: 'HOME - Shiny Xerneas Event',
+    method: 'HOME Event Transfer',
+    originType: 'home-event-transfer',
+    levelMin: 100,
+    levelMax: 100,
+    fixedBall: 'Cherish Ball',
+    shiny: 'Always',
+    forceShiny: true,
+    shinyLocked: false,
+    ability: 'Fairy Aura',
+    nature: 'Random',
+    heldItem: null,
+    note: 'Xerneas shiny de evento de transferencia HOME Nv. 100, Cherish Ball.'
+  },
+  {
+    species: 717,
+    games: ['za'],
+    idSuffix: 'descartes-shiny-yveltal-za',
+    homeProfileId: 'home-descartes-shiny-yveltal',
+    locationName: 'HOME - Evento Shiny Yveltal',
+    locationNameEn: 'HOME - Shiny Yveltal Event',
+    method: 'HOME Event Transfer',
+    originType: 'home-event-transfer',
+    levelMin: 100,
+    levelMax: 100,
+    fixedBall: 'Cherish Ball',
+    shiny: 'Always',
+    forceShiny: true,
+    shinyLocked: false,
+    ability: 'Dark Aura',
+    nature: 'Random',
+    heldItem: null,
+    note: 'Yveltal shiny de evento de transferencia HOME Nv. 100, Cherish Ball.'
+  },
+  {
+    species: 719,
+    games: ['za'],
+    idSuffix: 'pokecen-shiny-diancie-za',
+    homeProfileId: 'home-pokecen-shiny-diancie',
+    locationName: 'HOME - Evento Shiny Diancie',
+    locationNameEn: 'HOME - Shiny Diancie Event',
+    method: 'HOME Event Transfer',
+    originType: 'home-event-transfer',
+    levelMin: 50,
+    levelMax: 50,
+    fixedBall: 'Cherish Ball',
+    shiny: 'Always',
+    forceShiny: true,
+    shinyLocked: false,
+    ability: 'Clear Body',
+    nature: 'Random',
+    heldItem: null,
+    note: 'Diancie shiny de evento de transferencia HOME Nv. 50, Cherish Ball.'
+  },
   {
     species: 718,
     games: ['za'],

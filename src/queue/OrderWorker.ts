@@ -9,6 +9,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { games, loadEncounters } from '../lib/gameDb'
 import { findHomeEventProfile, formatHomeEventSysbotCommand } from '../lib/homeEventPatch'
+import { ordersStore } from '../routes/publicOrders'
 
 const PROFILE_PA9_MAP: Record<string, string> = {
   'home-shiny-zeraora':                'HOME Shiny Zeraora ZA.pa9',
@@ -49,6 +50,35 @@ const SV_HOME_SHINY_FILES: Record<number, string> = {
   792: '0792 ★ - Lunala - 8B8332462948.pk7',
   800: '0800 ★ - Necrozma - 091B3E0E66BA.pk7',
 };
+
+const ZA_SHINY_FILES: Record<number, string> = {
+  716: '0716 ★ - Xerneas - 29C81DB4E6C6.pk6',
+  717: '0717 ★ - Yveltal - C579E69295CF.pk6',
+  150: '0150 ★ - Mewtwo - 92491FB79B28.pk6',
+  719: '0719 ★ - Diancie - 4ED45A89912E.pk6',
+  648: '0648 ★ - Meloetta - 5053058CC31B.pk9',
+  485: '0485 ★ - Heatran - 86B6712FBFFF.pa9',
+  491: '0491 ★ - Darkrai - 7857307B1AE5.pa9',
+  647: '0647 ★ - Keldeo - 61A025DC38FF.pk8',
+};
+
+function resolveFilePath(folderParts: string[], filename: string): string | null {
+  const subPath = join(...folderParts, filename);
+  const possiblePaths = [
+    join(process.cwd(), subPath),
+    join(process.cwd(), 'backend', subPath),
+    join(__dirname, '..', '..', subPath),
+    join(__dirname, '..', 'lib', 'data', subPath),
+    join(__dirname, '..', '..', 'src', 'lib', 'data', subPath),
+  ];
+
+  for (const p of possiblePaths) {
+    if (existsSync(p)) {
+      return p;
+    }
+  }
+  return null;
+}
 
 // --- SV HOME EXPANSION PATCH START ---
 const dataDir = join(process.cwd(), 'src', 'lib', 'data');
@@ -163,20 +193,8 @@ export const orderWorker = new Worker(
 
           if (expansion) {
             const filename = expansion.fileName;
-            let pkPath = join(process.cwd(), 'sv_home_expansion_files', filename);
-            if (!existsSync(pkPath)) {
-              pkPath = join(process.cwd(), 'src', 'lib', 'data', 'sv_home_expansion_files', filename);
-            }
-            if (!existsSync(pkPath)) {
-              pkPath = join(__dirname, '..', '..', 'sv_home_expansion_files', filename);
-            }
-            if (!existsSync(pkPath)) {
-              pkPath = join(__dirname, '..', 'lib', 'data', 'sv_home_expansion_files', filename);
-            }
-            if (!existsSync(pkPath)) {
-              pkPath = join(__dirname, '..', '..', 'src', 'lib', 'data', 'sv_home_expansion_files', filename);
-            }
-            if (existsSync(pkPath)) {
+            const pkPath = resolveFilePath(['sv_home_expansion_files'], filename);
+            if (pkPath) {
               attachment = { buffer: readFileSync(pkPath), filename };
               console.log(`[OrderWorker] ✅ Loaded expansion fixed .pk/.pb8 file: ${filename} for species ${expansionKey}`);
               showdownText = ''; // Clear showdownText so only trade code is sent
@@ -186,15 +204,23 @@ export const orderWorker = new Worker(
           } else if ((gameVersion === 'scarlet' || gameVersion === 'violet') && pokemon.shiny && isHome && dexId && SV_HOME_SHINY_FILES[dexId]) {
             // SV HOME Shiny Attachments
             const filename = SV_HOME_SHINY_FILES[dexId];
-            let pkPath = join(process.cwd(), 'pk9', filename);
-            if (!existsSync(pkPath)) {
-              pkPath = join(__dirname, '..', '..', 'pk9', filename);
-            }
-            if (existsSync(pkPath)) {
+            const pkPath = resolveFilePath(['pk9'], filename);
+            if (pkPath) {
               attachment = { buffer: readFileSync(pkPath), filename };
               console.log(`[OrderWorker] ✅ Loaded fixed .pk file: ${filename} for species ${dexId}`);
             } else {
-              console.warn(`[OrderWorker] ⚠️ Fixed pk file not found at ${pkPath}`);
+              console.warn(`[OrderWorker] ⚠️ Fixed pk file not found for species ${dexId} (${filename})`);
+            }
+          } else if (gameVersion === 'legends-za' && pokemon.shiny && dexId && ZA_SHINY_FILES[dexId]) {
+            // ZA HOME Shiny Attachments
+            const filename = ZA_SHINY_FILES[dexId];
+            const pkPath = resolveFilePath(['pk9'], filename);
+            if (pkPath) {
+              attachment = { buffer: readFileSync(pkPath), filename };
+              console.log(`[OrderWorker] ✅ Loaded fixed ZA shiny file: ${filename} for species ${dexId}`);
+              showdownText = ''; // Clear showdownText so only trade code is sent
+            } else {
+              console.warn(`[OrderWorker] ⚠️ Fixed ZA shiny file not found for species ${dexId} (${filename})`);
             }
           } else if (gameVersion === 'legends-za') {
             // Legends Z-A HOME Event Formatting (available to all)
@@ -204,15 +230,12 @@ export const orderWorker = new Worker(
               if (userPlan === 'premium') {
                 const filename = PROFILE_PA9_MAP[eventProfile.id];
                 if (filename) {
-                  let pa9Path = join(process.cwd(), 'mgdb', filename);
-                  if (!existsSync(pa9Path)) {
-                    pa9Path = join(__dirname, '..', '..', 'mgdb', filename);
-                  }
-                  if (existsSync(pa9Path)) {
+                  const pa9Path = resolveFilePath(['mgdb'], filename);
+                  if (pa9Path) {
                     attachment = { buffer: readFileSync(pa9Path), filename };
                     console.log(`[OrderWorker] ✅ Loaded fixed .pa9 file: ${filename} for profile ${eventProfile.id}`);
                   } else {
-                    console.warn(`[OrderWorker] ⚠️ Event .pa9 file not found at ${pa9Path}`);
+                    console.warn(`[OrderWorker] ⚠️ Event .pa9 file not found for profile ${eventProfile.id} (${filename})`);
                   }
                 }
               }
@@ -243,6 +266,48 @@ export const orderWorker = new Worker(
           }
           
           uploadedFiles.push(`Sent via Discord: ${pokemon.species}`)
+
+          // Wait until this specific item is completed or failed
+          console.log(`[OrderWorker] Command sent for item ${i+1}/${team.length} (${pokemon.species}). Waiting for it to finish...`)
+          
+          const maxWaitTimeMs = 4 * 60 * 1000 // 4 minutes safety timeout
+          const pollIntervalMs = 2000
+          const startWait = Date.now()
+          let itemFinished = false
+
+          while (Date.now() - startWait < maxWaitTimeMs) {
+            const record = ordersStore.get(orderId)
+            if (record && record.items && record.items[i]) {
+              const currentStatus = String(record.items[i].status).toLowerCase()
+              if (currentStatus === 'completed' || currentStatus === 'failed') {
+                console.log(`[OrderWorker] Item ${i+1}/${team.length} reached status: ${currentStatus}`)
+                itemFinished = true
+                break
+              }
+            }
+            if (record) {
+              const orderStatus = String(record.status).toLowerCase()
+              if (orderStatus === 'failed' || orderStatus === 'expired' || orderStatus === 'cancelled' || orderStatus === 'partial_failed') {
+                console.log(`[OrderWorker] Order ${orderId} aborted with status: ${orderStatus}`)
+                break
+              }
+            }
+            await new Promise(resolve => setTimeout(resolve, pollIntervalMs))
+          }
+
+          if (!itemFinished) {
+            console.warn(`[OrderWorker] Timeout or order abort waiting for item ${i+1}/${team.length} to complete.`)
+          }
+
+          // If the order itself has failed or aborted, we stop the loop and don't send the next items
+          const record = ordersStore.get(orderId)
+          if (record) {
+            const orderStatus = String(record.status).toLowerCase()
+            if (orderStatus === 'failed' || orderStatus === 'expired' || orderStatus === 'cancelled' || orderStatus === 'partial_failed') {
+              console.log(`[OrderWorker] Stopping sequential delivery loop because order ${orderId} is in status ${orderStatus}`)
+              break
+            }
+          }
 
           // Wait between Pokémon in multi-Pokémon orders.
           // This prevents the trade code from expiring while the bot is still

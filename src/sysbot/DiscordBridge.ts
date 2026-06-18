@@ -269,6 +269,12 @@ class DiscordBridgeService {
     const content = message.content || '';
     if (!content) return;
 
+    // Ignore user commands (starting with !, %, $, &, /, ?, +, -)
+    const trimmed = content.trim();
+    if (/^[!%$&\/?+\-]/.test(trimmed)) {
+      return;
+    }
+
     // 3. Scan for 8-digit trade code (e.g. 1234 5678, 1234-5678, or 12345678)
     const codeRegex = /\b(\d{4})[\s-]?(\d{4})\b/g;
     let match;
@@ -280,15 +286,65 @@ class DiscordBridgeService {
 
     const contentLower = content.toLowerCase();
     
-    // Parse status based on keywords
-    const isQueued = ['queued', 'added to the linktrade queue', 'cola', 'añadido'].some(keyword => contentLower.includes(keyword));
-    const isPreparing = ['preparing', 'initializing trade', 'preparando', 'starting next'].some(keyword => contentLower.includes(keyword));
-    const isCompleted = ['completado', 'complete', 'completed', 'entregado', 'exito', 'éxito', 'disfruta', 'finished', 'enviado', 'sent', 'enjoy'].some(keyword => contentLower.includes(keyword));
-    const isFailed = ['fail', 'error', 'falló', 'fallo', 'cancelado', 'cancel', 'no se encontró', 'not found', 'timeout', 'expiró', 'notrainerfound', 'canceled', 'canceling', 'timed out'].some(keyword => contentLower.includes(keyword));
+    // Parse status based on strict bot-like keywords/patterns
+    const isQueued = [
+      'added to the linktrade queue',
+      'added to the queue',
+      'queue position',
+      'añadido a la cola'
+    ].some(keyword => contentLower.includes(keyword)) ||
+    /position\s*\d+/i.test(contentLower) ||
+    /posici[oó]n\s*\d+/i.test(contentLower);
 
-    // Prevent initializing trade message from triggering searching status prematurely
-    const isSearching = !isPreparing && ['searching', 'introduce', 'esperando', 'room', 'código', 'codigo', 'waiting'].some(keyword => contentLower.includes(keyword));
-    const isTrading = ['trading', 'intercambiando', 'curso', 'conectado'].some(keyword => contentLower.includes(keyword));
+    const isPreparing = [
+      'preparing your trade',
+      'initializing trade',
+      'preparando intercambio',
+      'starting next trade'
+    ].some(keyword => contentLower.includes(keyword));
+
+    const isCompleted = [
+      'trade completed',
+      'transaction complete',
+      'enjoy your pokemon',
+      'disfruta de tu pok',
+      'intercambio completado'
+    ].some(keyword => contentLower.includes(keyword));
+
+    const isFailed = [
+      'could not find partner',
+      'notrainerfound',
+      'no trainer found',
+      'no se encontr',
+      'trade cancelled',
+      'trade canceled',
+      'trade timed out',
+      'se agotó el tiempo',
+      'intercambio falló'
+    ].some(keyword => contentLower.includes(keyword));
+
+    // Prevent preparing/initializing trade message from triggering searching status prematurely
+    const isSearching = !isPreparing && (
+      [
+        'searching on',
+        'searching with code',
+        'waiting for trainer',
+        'introduce el código',
+        'inicia el intercambio',
+        'esperando al entrenador',
+        'buscando con el código'
+      ].some(keyword => contentLower.includes(keyword)) ||
+      (contentLower.includes('now searching') && parsedCode) ||
+      (contentLower.includes('código') && parsedCode) ||
+      (contentLower.includes('codigo') && parsedCode)
+    );
+
+    const isTrading = [
+      'trade in progress',
+      'intercambio en curso',
+      'connected to trainer',
+      'trading with'
+    ].some(keyword => contentLower.includes(keyword));
 
     // Extract Pokemon name if present in message
     let pokemonName: string | null = null;
@@ -517,7 +573,7 @@ class DiscordBridgeService {
         }
       }
 
-      let msg = `SysBot añadió el pedido a la cola. Posición: ${queuePosition || 'Desconocida'}.`;
+      let msg = `Tu pedido ha entrado en la cola. Posición: ${queuePosition || 'Desconocida'}.`;
       if (estimatedTime) {
         msg += ` Tiempo estimado de espera: ${estimatedTime}.`;
       }

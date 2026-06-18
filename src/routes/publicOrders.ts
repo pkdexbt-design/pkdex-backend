@@ -83,6 +83,7 @@ async function getOrInitOrder(orderId: string): Promise<any | null> {
 
     const record = {
       id: data.id,
+      user_id: data.user_id,
       game: data.game_version === 'legends-za' ? 'za' : 'sv',
       isBulk,
       tradeCode: data.trade_code,
@@ -119,7 +120,43 @@ router.get('/:id/status', async (req: Request, res: Response) => {
   if (!record) {
     return res.status(404).json({ error: 'Order not found' })
   }
-  return res.json({ order: record })
+
+  // Calculate remaining free trades if owner has a free plan
+  let remainingFreeTrades = undefined
+  try {
+    const supabase = getSupabase()
+    const { data: { user }, error: userErr } = await supabase.auth.admin.getUserById(record.user_id)
+    if (!userErr && user) {
+      const PAID_PLANS = ['gym', 'elite', 'champion', 'premium']
+      const rawPlan = user.app_metadata?.plan || user.user_metadata?.plan || 'free'
+      const isPremium = rawPlan && PAID_PLANS.includes(String(rawPlan).toLowerCase())
+      const plan = isPremium ? String(rawPlan).toLowerCase() : 'free'
+
+      if (plan === 'free') {
+        const gameGroup = record.game === 'za' ? 'za' : 'sv'
+        const startOfToday = new Date()
+        startOfToday.setUTCHours(0,0,0,0)
+
+        const { data: activeOrdersToday } = await supabase
+          .from('orders')
+          .select('game_version, status')
+          .eq('user_id', user.id)
+          .gte('created_at', startOfToday.toISOString())
+          .not('status', 'in', '("failed","expired","cancelled")')
+
+        const usedToday = (activeOrdersToday || []).filter((o: any) => {
+          const oGroup = o.game_version === 'legends-za' ? 'za' : 'sv'
+          return oGroup === gameGroup
+        }).length
+
+        remainingFreeTrades = Math.max(0, 3 - usedToday)
+      }
+    }
+  } catch (err) {
+    console.error(`[publicOrders] Failed to calculate remaining trades for order ${id}:`, err)
+  }
+
+  return res.json({ order: record, remainingFreeTrades })
 })
 
 /**
@@ -159,6 +196,16 @@ export async function updateOrderState(
         .from('orders')
         .update({ status })
         .eq('id', orderId)
+
+      // Release active trade lock in Redis if the order reaches a final status
+      const FINAL_STATUSES = ['completed', 'failed', 'partial_failed', 'expired', 'cancelled']
+      if (FINAL_STATUSES.includes(status.toLowerCase())) {
+        const { connection: redis } = require('../queue/redis')
+        const gameGroup = record.game === 'za' ? 'za' : 'sv'
+        const lockKey = `active_trade:${record.user_id}:${gameGroup}`
+        await redis.del(lockKey)
+        console.log(`[publicOrders] Released Redis lock ${lockKey} for order ${orderId}`)
+      }
     } catch (dbErr: any) {
       console.error(`[publicOrders] Failed to update status in Supabase for ${orderId}:`, dbErr.message || dbErr)
     }

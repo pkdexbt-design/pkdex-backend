@@ -5,6 +5,7 @@ import { validate } from '../lib/gameDb'
 import { CreateOrderRequest, CreateOrderResponse } from '../lib/order-types'
 import { AuthRequest } from '../middleware/auth'
 import { updateOrderState } from './publicOrders'
+import { connection as redis } from '../queue/redis'
 
 const router = Router()
 
@@ -62,19 +63,6 @@ router.post('/', async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: 'team cannot have more than 6 Pokémon' })
     }
 
-    // ─── Freemium limit ──────────────────────────────────
-    // Free users can only request 1 Pokémon per order to prevent abuse.
-    // Premium users can request up to 6.
-    const userPlan = req.user?.plan ?? 'free'
-    if (userPlan === 'free' && team.length > 1) {
-      return res.status(403).json({
-        error: 'free_plan_limit',
-        message: 'El plan gratuito permite solicitar 1 Pokémon por pedido. Actualiza a Premium para pedir hasta 6 a la vez.',
-        limit: 1,
-        userPlan,
-      })
-    }
-
     if (!tradeCode || typeof tradeCode !== 'string') {
       return res.status(400).json({ error: 'tradeCode is required' })
     }
@@ -85,6 +73,61 @@ router.post('/', async (req: AuthRequest, res: Response) => {
 
     if (!req.user?.id) {
       return res.status(401).json({ error: 'User not authenticated' })
+    }
+
+    const userPlan = req.user?.plan ?? 'free'
+
+    // ─── Freemium limits & checks ────────────────────────
+    // Free users can only request 1 Pokémon per order to prevent abuse.
+    if (userPlan === 'free' && team.length > 1) {
+      return res.status(403).json({
+        error: 'free_plan_limit',
+        message: 'El plan gratuito permite solicitar 1 Pokémon por pedido. Actualiza a Premium para pedir hasta 6 a la vez.',
+        limit: 1,
+        userPlan,
+      })
+    }
+
+    const gameGroup = gameVersion === 'legends-za' ? 'za' : 'sv';
+
+    // ─── Active Order Lock (Multi-tab protection) ────────
+    const lockKey = `active_trade:${req.user.id}:${gameGroup}`;
+    const activeOrderId = await redis.get(lockKey);
+    if (activeOrderId) {
+      return res.status(409).json({
+        error: 'active_order_exists',
+        message: 'Ya tienes un pedido activo para este juego. Completa o cancela tu pedido anterior antes de realizar uno nuevo.',
+        activeOrderId
+      });
+    }
+
+    // ─── Daily Limit Check for Free Users ────────────────
+    if (userPlan === 'free') {
+      const startOfToday = new Date();
+      startOfToday.setUTCHours(0,0,0,0);
+
+      const { data: activeOrdersToday, error: queryErr } = await getSupabase()
+        .from('orders')
+        .select('game_version, status')
+        .eq('user_id', req.user.id)
+        .gte('created_at', startOfToday.toISOString())
+        .not('status', 'in', '("failed","expired","cancelled")');
+
+      if (queryErr) {
+        console.error('[orders POST] Error checking daily limit:', queryErr.message);
+      } else {
+        const usedToday = (activeOrdersToday || []).filter(o => {
+          const oGroup = o.game_version === 'legends-za' ? 'za' : 'sv';
+          return oGroup === gameGroup;
+        }).length;
+
+        if (usedToday >= 3) {
+          return res.status(403).json({
+            error: 'daily_limit_reached',
+            message: 'Has alcanzado el límite de 3 intercambios diarios para este juego en el plan gratuito. Actualiza tu membresía para obtener intercambios ilimitados.'
+          });
+        }
+      }
     }
 
     // Validate and correct levels (e.g. min evolution levels for SV starters)
@@ -113,6 +156,14 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     if (error) {
       console.error('Supabase insert error:', error)
       return res.status(500).json({ error: 'Failed to create order', details: error.message })
+    }
+
+    // Acquire Redis lock for 15 minutes (900 seconds)
+    try {
+      await redis.set(lockKey, data.id, 'EX', 900);
+      console.log(`[orders POST] Redis lock set for ${lockKey} with order ${data.id}`);
+    } catch (lockErr) {
+      console.error('[orders POST] Failed to set Redis lock:', lockErr);
     }
 
     // Initialize order state in memory so the Discord bridge can match it by trade code
