@@ -308,17 +308,22 @@ class DiscordBridgeService {
       'transaction complete',
       'enjoy your pokemon',
       'disfruta de tu pok',
-      'intercambio completado'
+      'intercambio completado',
+      'trade finished',
+      'enjoy your'
     ].some(keyword => contentLower.includes(keyword));
 
     const isFailed = [
       'could not find partner',
       'notrainerfound',
       'no trainer found',
+      'couldn\'t find',
+      'no partner found',
       'no se encontr',
       'trade cancelled',
       'trade canceled',
       'trade timed out',
+      'timed out',
       'se agotó el tiempo',
       'intercambio falló'
     ].some(keyword => contentLower.includes(keyword));
@@ -329,14 +334,18 @@ class DiscordBridgeService {
         'searching on',
         'searching with code',
         'waiting for trainer',
+        'waiting for you',
         'introduce el código',
         'inicia el intercambio',
         'esperando al entrenador',
-        'buscando con el código'
+        'buscando con el código',
+        'esperándote',
+        'esperandote'
       ].some(keyword => contentLower.includes(keyword)) ||
       (contentLower.includes('now searching') && parsedCode) ||
       (contentLower.includes('código') && parsedCode) ||
-      (contentLower.includes('codigo') && parsedCode)
+      (contentLower.includes('codigo') && parsedCode) ||
+      (contentLower.includes('code is') && parsedCode)
     );
 
     const isTrading = [
@@ -479,7 +488,8 @@ class DiscordBridgeService {
           const isPending = !['completed', 'delivered', 'done', 'failed'].includes(String(it.status || '').toLowerCase());
           if (isPending) {
             const nameLower = (it.displayName || '').toLowerCase();
-            if (nameLower && contentLower.includes(nameLower)) {
+            const speciesLower = (it.species || '').toLowerCase();
+            if ((nameLower && contentLower.includes(nameLower)) || (speciesLower && contentLower.includes(speciesLower))) {
               matchedItemIndex = i;
               break;
             }
