@@ -487,8 +487,8 @@ class DiscordBridgeService {
           const it = items[i];
           const isPending = !['completed', 'delivered', 'done', 'failed'].includes(String(it.status || '').toLowerCase());
           if (isPending) {
-            const nameLower = (it.displayName || '').toLowerCase();
-            const speciesLower = (it.species || '').toLowerCase();
+            const nameLower = String(it.displayName || '').toLowerCase();
+            const speciesLower = String(it.species || '').toLowerCase();
             if ((nameLower && contentLower.includes(nameLower)) || (speciesLower && contentLower.includes(speciesLower))) {
               matchedItemIndex = i;
               break;
