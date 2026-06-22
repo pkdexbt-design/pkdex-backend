@@ -325,7 +325,18 @@ class DiscordBridgeService {
       'trade timed out',
       'timed out',
       'se agotó el tiempo',
-      'intercambio falló'
+      'intercambio falló',
+      'invalid',
+      'illegal',
+      'not legal',
+      'unable to trade',
+      'cannot trade',
+      'cannot be traded',
+      'inválido',
+      'invalido',
+      'no es legal',
+      'no se puede intercambiar',
+      'error'
     ].some(keyword => contentLower.includes(keyword));
 
     // Prevent preparing/initializing trade message from triggering searching status prematurely
