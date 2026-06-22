@@ -193,7 +193,7 @@ export const orderWorker = new Worker(
 
           if ((gameVersion === 'scarlet' || gameVersion === 'violet') && dexId === 1024) {
             // Custom Terapagos template for Scarlet/Violet
-            const filename = '1024 - Terapagos - 288628EF1F65.pk9';
+            const filename = '1024 - Terapagos - 785805BB1CAD.pk9';
             const pkPath = resolveFilePath(['pk9'], filename);
             if (pkPath) {
               attachment = { buffer: readFileSync(pkPath), filename };
@@ -301,6 +301,17 @@ export const orderWorker = new Worker(
               if (orderStatus === 'failed' || orderStatus === 'expired' || orderStatus === 'cancelled' || orderStatus === 'partial_failed') {
                 console.log(`[OrderWorker] Order ${orderId} aborted with status: ${orderStatus}`)
                 break
+              }
+
+              // If order is still pending (no response from bot at all) after 60 seconds, fail it
+              const elapsedMs = Date.now() - startWait;
+              if (orderStatus === 'pending' && elapsedMs > 60 * 1000) {
+                console.warn(`[OrderWorker] ⚠️ Bot did not respond within 60 seconds for order ${orderId}. Marking as failed.`);
+                await updateOrderState(orderId, {
+                  status: 'failed',
+                  message: 'El bot de Discord no respondió a la solicitud de intercambio. Puede que esté offline o saturado.'
+                });
+                break;
               }
             }
             await new Promise(resolve => setTimeout(resolve, pollIntervalMs))
