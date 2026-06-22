@@ -9,7 +9,7 @@ import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { games, loadEncounters } from '../lib/gameDb'
 import { findHomeEventProfile, formatHomeEventSysbotCommand } from '../lib/homeEventPatch'
-import { ordersStore } from '../routes/publicOrders'
+import { ordersStore, updateOrderState } from '../routes/publicOrders'
 
 const PROFILE_PA9_MAP: Record<string, string> = {
   'home-shiny-zeraora':                'HOME Shiny Zeraora ZA.pa9',
@@ -129,18 +129,18 @@ export const orderWorker = new Worker(
 
       if (gameVersion === 'scarlet' || gameVersion === 'violet') {
         if (userPlan === 'free') {
-          targetChannelId = (process.env.DISCORD_CHANNEL_ID_SV_FREE || process.env.DISCORD_CHANNEL_ID_SV)?.replace(/[^0-9]/g, '');
+          targetChannelId = (process.env.DISCORD_CHANNEL_ID_SV_FREE || process.env.DISCORD_CHANNEL_ID_SV || process.env.DISCORD_CHANNEL_ID)?.replace(/[^0-9]/g, '');
           commandPrefix = svFreePrefix;
         } else {
-          targetChannelId = (process.env.DISCORD_CHANNEL_ID_SV_PREMIUM || process.env.DISCORD_CHANNEL_ID_SV)?.replace(/[^0-9]/g, '');
+          targetChannelId = (process.env.DISCORD_CHANNEL_ID_SV_PREMIUM || process.env.DISCORD_CHANNEL_ID_SV || process.env.DISCORD_CHANNEL_ID)?.replace(/[^0-9]/g, '');
           commandPrefix = svPremiumPrefix;
         }
       } else if (gameVersion === 'legends-za') {
         if (userPlan === 'free') {
-          targetChannelId = process.env.DISCORD_CHANNEL_ID_ZA_FREE?.replace(/[^0-9]/g, '');
+          targetChannelId = (process.env.DISCORD_CHANNEL_ID_ZA_FREE || process.env.DISCORD_CHANNEL_ID_ZA || process.env.DISCORD_CHANNEL_ID)?.replace(/[^0-9]/g, '');
           commandPrefix = zaFreePrefix;
         } else {
-          targetChannelId = (process.env.DISCORD_CHANNEL_ID_ZA_PREMIUM || process.env.DISCORD_CHANNEL_ID_ZA)?.replace(/[^0-9]/g, '');
+          targetChannelId = (process.env.DISCORD_CHANNEL_ID_ZA_PREMIUM || process.env.DISCORD_CHANNEL_ID_ZA || process.env.DISCORD_CHANNEL_ID)?.replace(/[^0-9]/g, '');
           commandPrefix = zaPremiumPrefix;
         }
       }
@@ -353,7 +353,23 @@ orderWorker.on('completed', (job) => {
   console.log(`[OrderWorker] ✅ Order ${job.id} was delivered successfully.`)
 })
 
-orderWorker.on('failed', (job, err) => {
+orderWorker.on('failed', async (job, err) => {
   console.log(`[OrderWorker] ❌ Order ${job?.id} failed (will retry): ${err.message}`)
+  if (job) {
+    const { orderId } = job.data
+    const attemptsMade = job.attemptsMade || 0
+    const maxAttempts = job.opts?.attempts || 5
+    if (attemptsMade >= maxAttempts) {
+      console.log(`[OrderWorker] ❌ Order ${orderId} failed permanently after ${attemptsMade} attempts. Marking as failed...`)
+      try {
+        await updateOrderState(orderId, {
+          status: 'failed',
+          message: `El pedido no pudo ser enviado a Discord tras varios intentos.`
+        })
+      } catch (updateErr: any) {
+        console.error(`[OrderWorker] Error updating failed order ${orderId}:`, updateErr.message || updateErr)
+      }
+    }
+  }
 })
 
