@@ -9,7 +9,7 @@ let token = process.env.DISCORD_TOKEN;
 if (token && token.startsWith('"') && token.endsWith('"')) {
   token = token.slice(1, -1);
 }
-const isBot = false;
+const isBot = process.env.DISCORD_IS_BOT === 'true';
 
 if (!token) {
   console.error('No DISCORD_TOKEN found in .env');
@@ -33,12 +33,14 @@ client.on('ready', async () => {
   console.log(`Logged in as ${client.user?.tag}`);
 
   const channelsToFetch = [
-    { name: '#pedidos-za', id: process.env.DISCORD_CHANNEL_ID_ZA_PREMIUM || '1495899324436058252' },
-    { name: '#pedidos-za-free', id: process.env.DISCORD_CHANNEL_ID_ZA_FREE || '1498832934927601734' }
+    { name: '#pedidos-sv-free', id: process.env.DISCORD_CHANNEL_ID_SV_FREE || '1511960316471152660' },
+    { name: '#pedidos-sv-premium', id: process.env.DISCORD_CHANNEL_ID_SV_PREMIUM || '1495899209923039302' },
+    { name: '#pedidos-za-free', id: process.env.DISCORD_CHANNEL_ID_ZA_FREE || '1498832934927601734' },
+    { name: '#pedidos-za-premium', id: process.env.DISCORD_CHANNEL_ID_ZA_PREMIUM || '1495899324436058252' }
   ];
 
   for (const ch of channelsToFetch) {
-    console.log(`\n=== Fetching last 30 messages from ${ch.name} (${ch.id}) ===`);
+    console.log(`\n=== Fetching last 15 messages from ${ch.name} (${ch.id}) ===`);
     try {
       const channel = await client.channels.fetch(ch.id);
       if (!channel) {
@@ -46,7 +48,7 @@ client.on('ready', async () => {
         continue;
       }
       if (channel.isTextBased()) {
-        const messages = await channel.messages.fetch({ limit: 30 });
+        const messages = await channel.messages.fetch({ limit: 15 });
         console.log(`Found ${messages.size} messages.`);
         
         // Print in chronological order (oldest to newest)

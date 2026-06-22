@@ -78,6 +78,50 @@ app.get('/health/discord', (req: express.Request, res: express.Response) => {
   })
 })
 
+app.get('/health/queue', async (req: express.Request, res: express.Response) => {
+  try {
+    const { Queue } = require('bullmq')
+    const { connection } = require('./queue/redis')
+    const queue = new Queue('bot-orders', { connection })
+    
+    const [active, waiting, completed, failed, delayed] = await Promise.all([
+      queue.getActive(),
+      queue.getWaiting(),
+      queue.getCompleted(0, 10),
+      queue.getFailed(0, 10),
+      queue.getDelayed()
+    ])
+    
+    const activeJobs = active.map((j: any) => ({
+      id: j.id,
+      data: j.data,
+      timestamp: j.timestamp,
+      attemptsMade: j.attemptsMade
+    }))
+    
+    const waitingJobs = waiting.map((j: any) => ({
+      id: j.id,
+      data: j.data,
+      timestamp: j.timestamp
+    }))
+    
+    res.json({
+      status: 'ok',
+      counts: {
+        active: active.length,
+        waiting: waiting.length,
+        completed: completed.length,
+        failed: failed.length,
+        delayed: delayed.length
+      },
+      active: activeJobs,
+      waiting: waitingJobs
+    })
+  } catch (err: any) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // Debug endpoint: Preview the exact Showdown text that would be sent to the bot
 app.get('/debug/showdown', (req: express.Request, res: express.Response) => {
   const { buildShowdownText } = require('./lib/showdownBuilder')
