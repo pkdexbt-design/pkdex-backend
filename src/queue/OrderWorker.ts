@@ -191,7 +191,18 @@ export const orderWorker = new Worker(
           const expansionKey = `${dexId}-${form}`;
           const expansion = (gameVersion === 'scarlet' || gameVersion === 'violet') ? SV_HOME_EXPANSION_FILE_MAP[expansionKey] : null;
 
-          if (expansion) {
+          if ((gameVersion === 'scarlet' || gameVersion === 'violet') && dexId === 1024) {
+            // Custom Terapagos template for Scarlet/Violet
+            const filename = '1024 - Terapagos - 288628EF1F65.pk9';
+            const pkPath = resolveFilePath(['pk9'], filename);
+            if (pkPath) {
+              attachment = { buffer: readFileSync(pkPath), filename };
+              console.log(`[OrderWorker] ✅ Loaded fixed Terapagos file: ${filename}`);
+              showdownText = ''; // Clear showdownText so only trade code is sent
+            } else {
+              console.warn(`[OrderWorker] ⚠️ Fixed Terapagos file not found: ${filename}`);
+            }
+          } else if (expansion) {
             const filename = expansion.fileName;
             const pkPath = resolveFilePath(['sv_home_expansion_files'], filename);
             if (pkPath) {
