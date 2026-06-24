@@ -339,6 +339,11 @@ class DiscordBridgeService {
       'error'
     ].some(keyword => contentLower.includes(keyword));
 
+    const isRemoved = contentLower.includes('tradequeueinfo: removing') && (
+      contentLower.includes('pkdex web') || 
+      (this.client.user?.username && contentLower.includes(this.client.user.username.toLowerCase()))
+    );
+
     // Prevent preparing/initializing trade message from triggering searching status prematurely
     const isSearching = !isPreparing && (
       [
@@ -464,6 +469,29 @@ class DiscordBridgeService {
     }
 
     const items = matchedOrder.items ? [...matchedOrder.items] : [];
+
+    if (isRemoved) {
+      console.log(`[DiscordBridge] Order ${matchedOrderId} removed from bot queue. Finalizing state.`);
+      const hasCompletedAny = items.some(it => ['completed', 'delivered', 'done'].includes(String(it.status || '').toLowerCase()));
+      const nextStatus = hasCompletedAny ? 'completed' : 'failed';
+      const msg = hasCompletedAny ? '¡Intercambio finalizado!' : 'El bot finalizó la sesión o retiró el pedido de la cola.';
+      
+      const updatedItems = items.map(it => {
+        if (!['completed', 'delivered', 'done', 'failed'].includes(String(it.status || '').toLowerCase())) {
+          return { ...it, status: hasCompletedAny ? 'completed' : 'failed' };
+        }
+        return it;
+      });
+
+      await updateOrderState(matchedOrderId, {
+        status: nextStatus,
+        message: msg,
+        items: updatedItems
+      });
+
+      this.activeOrdersByChannel.delete(message.channel.id);
+      return;
+    }
 
     if (isFailed) {
       console.log(`[DiscordBridge] Order ${matchedOrderId} marked as FAILED`);
