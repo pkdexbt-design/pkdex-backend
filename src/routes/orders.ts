@@ -76,6 +76,7 @@ router.post('/', async (req: AuthRequest, res: Response) => {
     }
 
     const userPlan = req.user?.plan ?? 'free'
+    console.log(`[orders POST] user=${req.user.id} plan='${userPlan}' game=${gameVersion} teamSize=${team.length}`);
 
     // ─── Freemium limits & checks ────────────────────────
     // Free users can only request 1 Pokémon per order to prevent abuse.
@@ -139,6 +140,25 @@ router.post('/', async (req: AuthRequest, res: Response) => {
       }
       return pokemon;
     });
+
+    // ─── Membership Tier Restrictions Validation ──────────
+    for (const pokemon of validatedTeam) {
+      const pokDexId = Number(pokemon.dexId ?? pokemon.speciesId ?? pokemon.species);
+      console.log(`[orders POST] Checking membership for dexId=${pokDexId} (raw dexId=${pokemon.dexId}, species=${pokemon.species}) shiny=${pokemon.shiny} form=${pokemon.form} plan=${userPlan}`);
+      const check = checkPokemonMembership(userPlan, gameVersion, pokemon);
+      if (check && !check.allowed) {
+        const errorMsg = getFriendlyMembershipErrorMessage(userPlan, check.minTier);
+        console.log(`[orders POST] BLOCKED user=${req.user.id} dexId=${pokDexId} requires=${check.minTier} userPlan=${userPlan}`);
+        return res.status(403).json({
+          error: errorMsg,
+          message: errorMsg,
+          code: 'membership_restriction',
+          minTier: check.minTier,
+          groupName: check.groupName
+        });
+      }
+      console.log(`[orders POST] ALLOWED dexId=${pokDexId} for plan=${userPlan}`);
+    }
 
     // ─── Insert in Supabase ───────────────────────────────
     const { data, error } = await getSupabase()
@@ -228,5 +248,115 @@ router.get('/', async (req: AuthRequest, res: Response) => {
     return res.status(500).json({ error: 'Internal server error' })
   }
 })
+
+function getPlanTierValue(plan: string): number {
+  switch (String(plan).toLowerCase()) {
+    case 'free': return 0;
+    case 'gym': return 1;
+    case 'elite': return 2;
+    case 'champion':
+    case 'premium': return 3;
+    default: return 0;
+  }
+}
+
+function checkPokemonMembership(userPlan: string, gameVersion: string, pokemon: any): { allowed: boolean; minTier: string; groupName: string } | null {
+  const plan = String(userPlan).toLowerCase();
+  const game = (gameVersion === 'legends-za' || gameVersion === 'za') ? 'za' : 'sv';
+  const dexId = Number(pokemon.dexId ?? pokemon.speciesId ?? pokemon.species);
+  const form = Number(pokemon.form || 0);
+  const shiny = !!pokemon.shiny;
+
+  const planValue = getPlanTierValue(plan);
+
+  if (game === 'za') {
+    // 1. ZA eventos basicos con archivo (minTier: lider/gym)
+    const zaLiderShinies = [716, 717, 150, 719, 485, 491]; // Xerneas, Yveltal, Mewtwo, Diancie, Heatran, Darkrai
+    if (zaLiderShinies.includes(dexId) && shiny) {
+      if (planValue < 1) {
+        return { allowed: false, minTier: 'gym', groupName: 'Eventos básicos ZA Shiny' };
+      }
+    }
+    // Floette Flor Eterna (Form 5) is always blocked for free (minTier: gym)
+    if (dexId === 670 && form === 5) {
+      if (planValue < 1) {
+        return { allowed: false, minTier: 'gym', groupName: 'Floette Flor Eterna' };
+      }
+    }
+
+    // 2. ZA HOME/recompensa (minTier: alto_mando/elite)
+    const zaAltoMandoShinies = [648, 647, 721]; // Meloetta, Keldeo, Volcanion
+    if (zaAltoMandoShinies.includes(dexId) && (shiny || dexId === 721)) {
+      if (planValue < 2) {
+        return { allowed: false, minTier: 'elite', groupName: 'Recompensas HOME ZA' };
+      }
+    }
+  } else {
+    // SV Game
+    // 3. SV 16 shiny evento con archivo fijo (minTier: lider/gym)
+    const sv16Shiny = [144, 145, 146, 150, 243, 244, 245, 250, 382, 383, 384, 483, 484, 791, 792, 800];
+    if (sv16Shiny.includes(dexId) && shiny) {
+      if (planValue < 1) {
+        return { allowed: false, minTier: 'gym', groupName: '16 Shiny de Evento SV' };
+      }
+    }
+
+    // 4. SV otros archivos especiales (Koraidon, Miraidon, Wo-Chien, Chien-Pao, Ting-Lu, Chi-Yu, Meloetta shiny SV) (minTier: lider/gym)
+    const svSpecialShiny = [1001, 1002, 1003, 1004, 1007, 1008];
+    if ((svSpecialShiny.includes(dexId) && shiny) || (dexId === 648 && shiny)) {
+      if (planValue < 1) {
+        return { allowed: false, minTier: 'gym', groupName: 'Especiales / Shiny locked SV' };
+      }
+    }
+
+    // 5. SV recompensas HOME/singulares superiores (minTier: alto_mando/elite)
+    const svAltoMando = [493, 648, 647, 721, 801, 802, 893, 1025]; // Arceus, Meloetta, Keldeo, Volcanion, Magearna, Marshadow, Zarude, Pecharunt
+    if (svAltoMando.includes(dexId)) {
+      if (planValue < 2) {
+        return { allowed: false, minTier: 'elite', groupName: 'Recompensas HOME / Singulares SV' };
+      }
+    }
+
+    // 6. SV 36 HOME-only exactos (minTier: campeon/champion)
+    const sv36HomeOnly = [
+      151, 377, 378, 379, 385, 386, 480, 481, 482, 485, 486, 487, 488, 489, 490, 491, 492, 
+      641, 642, 645, 719, 720, 888, 889, 890, 894, 895, 905
+    ]; // Mew, Regirock, etc
+    if (sv36HomeOnly.includes(dexId)) {
+      if (planValue < 3) {
+        return { allowed: false, minTier: 'champion', groupName: 'Pokémon de HOME-only SV' };
+      }
+    }
+
+    // 7. SV evoluciones finales de iniciales shiny (minTier: campeon/champion)
+    const svStarters = [
+      3, 6, 9, 154, 157, 160, 254, 257, 260, 389, 392, 395, 497, 500, 503, 652, 655, 658,
+      724, 727, 730, 812, 815, 818, 908, 911, 914
+    ];
+    if (svStarters.includes(dexId) && shiny) {
+      if (planValue < 3) {
+        return { allowed: false, minTier: 'champion', groupName: 'Iniciales Shiny SV' };
+      }
+    }
+  }
+
+  return null;
+}
+
+function getFriendlyMembershipErrorMessage(userPlan: string, minTier: string): string {
+  const isFree = String(userPlan).toLowerCase() === 'free';
+  const tierNames: Record<string, string> = {
+    gym: 'Líder de Gimnasio',
+    elite: 'Alto Mando',
+    champion: 'Campeón de Liga'
+  };
+  const requiredTierName = tierNames[minTier] || minTier;
+
+  if (isFree) {
+    return `Hazte miembro para obtener este Pokémon (${requiredTierName}).`;
+  } else {
+    return `Mejora tu membresía para obtener este Pokémon (${requiredTierName}).`;
+  }
+}
 
 export default router
