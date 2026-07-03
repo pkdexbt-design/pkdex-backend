@@ -1,6 +1,7 @@
 import { Router, Response } from 'express'
 import { getSupabase } from '../lib/supabase'
 import Stripe from 'stripe'
+import { authMiddleware, AuthRequest } from '../middleware/auth'
 
 const router = Router()
 
@@ -301,6 +302,54 @@ router.post('/stripe-webhook', async (req: any, res: Response) => {
   }
 
   return res.status(200).json({ received: true })
+})
+
+/**
+ * @swagger
+ * /api/payments/test-change-plan:
+ *   post:
+ *     summary: Cambiar el plan del usuario autenticado (para pruebas)
+ *     tags:
+ *       - Payments
+ *     security:
+ *       - bearerAuth: []
+ */
+router.post('/test-change-plan', authMiddleware as any, async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.user?.id
+    const { plan } = req.body
+
+    const ALLOWED_PLANS = ['free', 'gym', 'elite', 'champion', 'premium']
+    if (!plan || !ALLOWED_PLANS.includes(String(plan).toLowerCase())) {
+      return res.status(400).json({ error: 'Plan inválido' })
+    }
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Usuario no autenticado' })
+    }
+
+    const supabase = getSupabase()
+    console.log(`[payments/test-change-plan] Updating user ${userId} to plan: ${plan}`)
+
+    const { data: updatedUser, error: updateError } = await supabase.auth.admin.updateUserById(
+      userId,
+      { app_metadata: { plan: plan.toLowerCase() } }
+    )
+
+    if (updateError) {
+      console.error('[payments/test-change-plan] Supabase update user error:', updateError)
+      return res.status(500).json({ error: 'No se pudo actualizar el plan en Supabase' })
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: `Plan actualizado a ${plan} correctamente`,
+      plan: updatedUser.user.app_metadata?.plan
+    })
+  } catch (err: any) {
+    console.error('[payments/test-change-plan] Unexpected error:', err)
+    return res.status(500).json({ error: 'Error interno del servidor' })
+  }
 })
 
 export default router
