@@ -233,7 +233,7 @@ router.get('/', async (req: AuthRequest, res: Response) => {
 
     const { data, error } = await getSupabase()
       .from('orders')
-      .select('id, trade_code, status, game_version, created_at, updated_at')
+      .select('id, trade_code, status, game_version, team_payload, created_at, updated_at')
       .eq('user_id', req.user.id)
       .order('created_at', { ascending: false })
       .limit(20)
