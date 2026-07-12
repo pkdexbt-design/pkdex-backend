@@ -359,4 +359,38 @@ function getFriendlyMembershipErrorMessage(userPlan: string, minTier: string): s
   }
 }
 
+/**
+ * @swagger
+ * /api/orders/{id}/cancel:
+ *   post:
+ *     summary: Cancelar un pedido activo
+ *     tags:
+ *       - Orders
+ *     security:
+ *       - bearerAuth: []
+ */
+router.post('/:id/cancel', async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params
+    if (!req.user?.id) {
+      return res.status(401).json({ error: 'User not authenticated' })
+    }
+
+    // Update status to 'cancelled' (releases lock and Supabase row status)
+    const record = await updateOrderState(id, { 
+      status: 'cancelled', 
+      message: 'Pedido cancelado por el usuario.' 
+    })
+
+    if (!record) {
+      return res.status(404).json({ error: 'Order not found' })
+    }
+
+    return res.status(200).json({ ok: true, order: record })
+  } catch (err: any) {
+    console.error('[orders] Cancel order error:', err)
+    return res.status(500).json({ error: 'Internal server error cancelling order' })
+  }
+})
+
 export default router
