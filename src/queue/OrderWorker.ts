@@ -332,10 +332,12 @@ export const orderWorker = new Worker(
           }
 
           // Wait between Pokémon in multi-Pokémon orders.
-          // This prevents the trade code from expiring while the bot is still
-          // processing the previous Pokémon. The game allows ~30s per trade.
+          // SV bots need extra time after a trade completes before they can
+          // accept the next !trade command. Too short a gap causes NoTrainerFound
+          // on the second Pokémon. ZA is faster but the longer delay is safe.
           if (i < team.length - 1) {
-            const delayMs = 8000
+            const isSV = gameVersion === 'scarlet' || gameVersion === 'violet';
+            const delayMs = isSV ? 18000 : 8000;
             console.log(`[OrderWorker] ⏳ Waiting ${delayMs}ms before sending next Pokémon (${i+2}/${team.length})...`)
             await new Promise(resolve => setTimeout(resolve, delayMs))
           }

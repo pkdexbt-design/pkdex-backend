@@ -335,8 +335,7 @@ class DiscordBridgeService {
       'inválido',
       'invalido',
       'no es legal',
-      'no se puede intercambiar',
-      'error'
+      'no se puede intercambiar'
     ].some(keyword => contentLower.includes(keyword));
 
     const isRemoved = contentLower.includes('tradequeueinfo: removing') && (
@@ -471,12 +470,42 @@ class DiscordBridgeService {
     const items = matchedOrder.items ? [...matchedOrder.items] : [];
 
     if (isRemoved) {
-      console.log(`[DiscordBridge] Order ${matchedOrderId} removed from bot queue. Finalizing state.`);
-      const hasCompletedAny = items.some(it => ['completed', 'delivered', 'done'].includes(String(it.status || '').toLowerCase()));
+      console.log(`[DiscordBridge] Order ${matchedOrderId} removed from bot queue. Waiting 3s to allow completion messages to arrive first...`);
+      // SysBot SV sends the "TradeQueueInfo: Removing" message sometimes BEFORE
+      // the "enjoy your pokemon" completion message (race condition). We wait
+      // briefly so that isCompleted can be processed first if it arrives.
+      await new Promise(resolve => setTimeout(resolve, 3000));
+
+      // Re-read order state from store after the grace period
+      const freshOrder = ordersStore.get(matchedOrderId);
+      if (!freshOrder) {
+        this.activeOrdersByChannel.delete(message.channel.id);
+        return;
+      }
+      const freshItems = freshOrder.items ? [...freshOrder.items] : [];
+
+      // If the order already reached a final state during the grace period, skip
+      const alreadyFinal = ['completed', 'failed', 'partial_failed', 'expired', 'cancelled'].includes(String(freshOrder.status).toLowerCase());
+      if (alreadyFinal) {
+        console.log(`[DiscordBridge] Order ${matchedOrderId} already in final state (${freshOrder.status}), skipping isRemoved handler.`);
+        this.activeOrdersByChannel.delete(message.channel.id);
+        return;
+      }
+
+      const hasCompletedAny = freshItems.some(it => ['completed', 'delivered', 'done'].includes(String(it.status || '').toLowerCase()));
+      const allItemsDone = freshItems.length > 0 && freshItems.every(it => ['completed', 'delivered', 'done', 'failed'].includes(String(it.status || '').toLowerCase()));
+
+      // If it's a bulk order and not all items are done yet, do NOT finalize —
+      // the next Pokémon command is still being sent by OrderWorker.
+      if (freshItems.length > 1 && !allItemsDone) {
+        console.log(`[DiscordBridge] Bulk order ${matchedOrderId}: isRemoved received mid-batch, skipping finalization.`);
+        return;
+      }
+
       const nextStatus = hasCompletedAny ? 'completed' : 'failed';
       const msg = hasCompletedAny ? '¡Intercambio finalizado!' : 'El bot finalizó la sesión o retiró el pedido de la cola.';
       
-      const updatedItems = items.map(it => {
+      const updatedItems = freshItems.map(it => {
         if (!['completed', 'delivered', 'done', 'failed'].includes(String(it.status || '').toLowerCase())) {
           return { ...it, status: hasCompletedAny ? 'completed' : 'failed' };
         }
