@@ -334,10 +334,11 @@ export const orderWorker = new Worker(
           // Wait between Pokémon in multi-Pokémon orders.
           // SV bots need extra time after a trade completes before they can
           // accept the next !trade command. Too short a gap causes NoTrainerFound
-          // on the second Pokémon. ZA is faster but the longer delay is safe.
+          // on the second Pokémon or user cooldown blocks from the bot.
+          // ZA is faster but also benefit from a slightly longer gap for safety.
           if (i < team.length - 1) {
             const isSV = gameVersion === 'scarlet' || gameVersion === 'violet';
-            const delayMs = isSV ? 18000 : 8000;
+            const delayMs = isSV ? 35000 : 15000;
             console.log(`[OrderWorker] ⏳ Waiting ${delayMs}ms before sending next Pokémon (${i+2}/${team.length})...`)
             await new Promise(resolve => setTimeout(resolve, delayMs))
           }
@@ -353,7 +354,8 @@ export const orderWorker = new Worker(
       // before processing the next queued order. Without this, back-to-back orders
       // send !trade commands while the bot is still wrapping up the previous trade,
       // which causes SysBot to cancel the new trade immediately.
-      const postOrderDelay = 15000
+      const isSV = gameVersion === 'scarlet' || gameVersion === 'violet';
+      const postOrderDelay = isSV ? 25000 : 15000;
       console.log(`[OrderWorker] ⏳ Post-order cooldown: waiting ${postOrderDelay}ms before next order...`)
       await new Promise(resolve => setTimeout(resolve, postOrderDelay))
 
