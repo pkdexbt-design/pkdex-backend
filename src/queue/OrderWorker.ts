@@ -338,7 +338,7 @@ export const orderWorker = new Worker(
           // ZA is faster but also benefit from a slightly longer gap for safety.
           if (i < team.length - 1) {
             const isSV = gameVersion === 'scarlet' || gameVersion === 'violet';
-            const delayMs = isSV ? 35000 : 15000;
+            const delayMs = isSV ? 25000 : 15000;
             console.log(`[OrderWorker] ⏳ Waiting ${delayMs}ms before sending next Pokémon (${i+2}/${team.length})...`)
             await new Promise(resolve => setTimeout(resolve, delayMs))
           }
@@ -355,7 +355,7 @@ export const orderWorker = new Worker(
       // send !trade commands while the bot is still wrapping up the previous trade,
       // which causes SysBot to cancel the new trade immediately.
       const isSV = gameVersion === 'scarlet' || gameVersion === 'violet';
-      const postOrderDelay = isSV ? 25000 : 15000;
+      const postOrderDelay = isSV ? 18000 : 15000;
       console.log(`[OrderWorker] ⏳ Post-order cooldown: waiting ${postOrderDelay}ms before next order...`)
       await new Promise(resolve => setTimeout(resolve, postOrderDelay))
 
