@@ -300,17 +300,41 @@ class DiscordBridgeService {
       'preparing your trade',
       'initializing trade',
       'preparando intercambio',
-      'starting next trade'
+      'starting next trade',
+      'starting next flextrade',
+      'starting bot trade',
+      'getting data'
     ].some(keyword => contentLower.includes(keyword));
 
     const isCompleted = [
       'trade completed',
+      'trade complete',
       'transaction complete',
+      'transaction completed',
       'enjoy your pokemon',
+      'enjoy your',
       'disfruta de tu pok',
+      'disfruta de tu',
+      'disfruta',
       'intercambio completado',
+      'intercambio finalizado',
+      'intercambio terminado',
       'trade finished',
-      'enjoy your'
+      'traded with',
+      'traded',
+      'block trade finished',
+      'flextrade complete',
+      'flextrade completed',
+      'flextrade finished',
+      'specific bot trade complete',
+      'specific bot trade completed',
+      'specific bot trade finished',
+      'ending trade',
+      'ended trade',
+      'trade ended',
+      'trade summary',
+      'trade successful',
+      'successfully traded'
     ].some(keyword => contentLower.includes(keyword));
 
     const isFailed = [
@@ -350,6 +374,8 @@ class DiscordBridgeService {
         'searching with code',
         'waiting for trainer',
         'waiting for you',
+        'entering link trade code',
+        'entering trade code',
         'introduce el código',
         'inicia el intercambio',
         'esperando al entrenador',
@@ -367,7 +393,11 @@ class DiscordBridgeService {
       'trade in progress',
       'intercambio en curso',
       'connected to trainer',
-      'trading with'
+      'trading with',
+      'is now trading',
+      'selecting link trade',
+      'found pkdex',
+      'last traded with'
     ].some(keyword => contentLower.includes(keyword));
 
     // Extract Pokemon name if present in message
